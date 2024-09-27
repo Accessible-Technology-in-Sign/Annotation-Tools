@@ -1,0 +1,19 @@
+{
+    "sign_list": "sign_list.txt",
+    "review_source": "/Users/bill/School/Research/Annotation_Test/review_source",
+    "reference_source": "/Users/bill/School/Research/Annotation_Test/reference_source/dpan_source_videos",
+    "output": "/Users/bill/School/Research/output",
+    "language": "en",
+    "hotkeys": {
+        "pause_key": "P",
+        "replay_key": "-",
+        "speed_up_key": "[",
+        "slow_down_key": "]",
+        "next_key": "=",
+        "prev_key": "0",
+        "good_key": "Z",
+        "variant_key": "X",
+        "unrecognizable_key": "C",
+        "further_review_key": "V"
+    }
+}
