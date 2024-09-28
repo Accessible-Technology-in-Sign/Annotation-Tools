@@ -1,0 +1,5 @@
+PyQt5
+python-vlc
+pandas
+SQLAlchemy
+pymysql
