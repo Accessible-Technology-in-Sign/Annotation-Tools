@@ -1,0 +1,20 @@
+{
+    "sign_list": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/sign_list.txt",
+    "review_source": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/review_source/",
+    "reference_source": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/reference/dpan_source_videos",
+    "output": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/output",
+    "language": "ja",
+    "hotkeys": {
+        "pause_key": "P",
+        "replay_key": "-",
+        "speed_up_key": "[",
+        "slow_down_key": "]",
+        "next_key": "=",
+        "prev_key": "0",
+        "good_key": "Z",
+        "variant_key": "X",
+        "unrecognizable_key": "C",
+        "further_review_key": "V"
+    },
+    "annotation_categories": ["Good", "Variant", "Unrecognizable", "Further Review"]
+}

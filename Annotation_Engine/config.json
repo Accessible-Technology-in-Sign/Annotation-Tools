@@ -1,8 +1,8 @@
 {
-    "sign_list": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/sign_list.txt",
-    "review_source": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/review_source/",
-    "reference_source": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/reference/dpan_source_videos",
-    "output": "/Users/bill/School/Research/Annotation-Tools/Annotation_Engine/output",
+    "sign_list": "./sign_list.txt",
+    "review_source": "./review_source/",
+    "reference_source": "./reference/dpan_source_videos",
+    "output": "./output",
     "language": "en",
     "hotkeys": {
         "pause_key": "P",

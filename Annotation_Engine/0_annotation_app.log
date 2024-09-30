@@ -1,0 +1,18 @@
+2024-09-30 21:47:24,277:INFO:Translator loaded for language: en
+2024-09-30 21:47:24,297:INFO:UI initialized.
+2024-09-30 21:47:24,297:INFO:Loaded 1 signs from ./sign_list.txt.
+2024-09-30 21:47:24,300:INFO:Loaded 130 videos from ./review_source/review_1/after.
+2024-09-30 21:47:24,355:ERROR:Failed to load videos from ./review_source/review_1/after: argument 2: TypeError: wrong type
+2024-09-30 21:47:25,621:INFO:Word selected: after. Reset video index.
+2024-09-30 21:47:25,621:INFO:Batch selected: review_1. Loaded 1 words.
+2024-09-30 21:47:25,622:INFO:Loaded 1 batches from ./review_source/.
+2024-09-30 21:47:25,622:INFO:No previous state found. Starting fresh.
+2024-09-30 21:47:25,623:INFO:UI retranslated.
+2024-09-30 21:47:25,623:INFO:Loaded translation for language: en
+2024-09-30 21:47:25,623:INFO:AnnotationApp initialized.
+2024-09-30 21:47:25,640:INFO:Application started.
+2024-09-30 21:47:27,812:INFO:Video replayed.
+2024-09-30 21:47:27,813:INFO:Hotkey triggered action for key: -
+2024-09-30 21:47:35,219:INFO:Saved in-progress annotations to ./output/after/in_progress.csv.
+2024-09-30 21:47:35,220:INFO:State saved successfully.
+2024-09-30 21:47:35,226:INFO:Application closed by user.
