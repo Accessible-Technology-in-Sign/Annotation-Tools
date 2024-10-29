@@ -1,5 +1,11 @@
 node_modules
 
+# IntelliJ
+.idea/
+
+.svelte-kit
+
+
 # Output
 .output
 .vercel
