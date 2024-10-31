@@ -1,29 +1,18 @@
 <script>
   import { Pane, Splitpanes } from 'svelte-splitpanes';
-  let videoElement;
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
   let playbackRate = 1;
-  
+
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
-  // Toggle playback of the video to be reviewed. You could add something similar for
-  // the reference video too.
   function playPause() {
     reviewVideoPaused = !reviewVideoPaused;
-    document.getElementById("playPauseIcon").src = reviewVideoPaused ? "play.svg" : "pause.svg";
   }
 
-  function letLoop() {
+  function toggleLoop() {
     reviewVideoLooped = !reviewVideoLooped;
-    videoElement.loop = reviewVideoLooped;
-    document.getElementById("loopIcon").src = reviewVideoLooped ? "not-looped.svg" : "loop.svg";
-  }
-
-  function handleVideoEnded() {
-    !reviewVideoPaused;
-    document.getElementById("playPauseIcon").src = "play.svg";
   }
 
   function slowDown() {
@@ -39,17 +28,27 @@
     switch (event.key) {
       case " ":
         playPause();
-        event.preventDefault();
+        break;
+      case "-":
+        toggleLoop();
         break;
       case "0":
         prevVideo();
-        event.preventDefault();
         break;
       case "=":
         nextVideo();
-        event.preventDefault();
         break;
+      case "[":
+        slowDown();
+        break;
+      case "]":
+        speedUp();
+        break;
+      default:
+        return;
     }
+
+    event.preventDefault();
   }
 
   const videoData = [
@@ -79,36 +78,8 @@
     if (currReviewVideo < videoData[currReferenceVideo].reviewVideos.length - 1) {
       currReviewVideo++;
     }
-
-    switch (event.key) {
-      case "-":
-        letLoop();
-        event.preventDefault();
-        break;
-    }
-
-    switch (event.key) {
-      case "-":
-        letLoop();
-        event.preventDefault();
-        break;
-    }
-
-    switch (event.key) {
-      case "[":
-        slowDown();
-        event.preventDefault();
-        break;
-    }
-
-    switch (event.key) {
-      case "]":
-        speedUp();
-        event.preventDefault();
-        break;
-    }
-
   }
+
 </script>
 
 <svelte:window on:keypress={onKeyPress} />
@@ -120,12 +91,9 @@
       <Pane class="rounded-xl" minSize={20}>
         <!-- Video to review -->
         <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
-            loop
-            bind:this={videoElement}
+            loop={reviewVideoLooped}
             bind:paused={reviewVideoPaused}
-            bind:playbackRate={playbackRate}
-            bind:paused={reviewVideoPaused}
-            on:ended={handleVideoEnded} />
+            bind:playbackRate={playbackRate} />
       </Pane>
       <Pane class="rounded-xl" minSize={15}>
         <!-- Reference video -->
@@ -140,12 +108,18 @@
 <div class="w-full h-20 flex items-center justify-start">
 
   <!-- Pause/Play button-->
-  <button on:click={playPause} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="pause.svg" alt="paused icon">
+  <button on:click={playPause}
+      class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+    <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+        src="{reviewVideoPaused ? "play" : "pause"}.svg"
+        alt="paused icon">
   </button>
 
-  <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="loop.svg" alt="play icon">
+  <button on:click={toggleLoop}
+      class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+    <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+        src="{reviewVideoLooped ? "loop" : "not-looped" }.svg"
+        alt="play icon">
   </button>
 
   <!-- Slow down video button-->
@@ -158,10 +132,12 @@
     <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
   </button>
 
-   <button on:click={prevVideo} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+  <!-- Previous video -->
+  <button on:click={prevVideo} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
     <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="previous.svg">
   </button>
 
+  <!-- Next video -->
   <button on:click={nextVideo} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
     <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="next.svg">
   </button>
