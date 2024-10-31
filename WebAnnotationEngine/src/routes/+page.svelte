@@ -3,6 +3,8 @@
   let videoElement;
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
+  let playbackRate = 1;
+  
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
@@ -22,6 +24,14 @@
   function handleVideoEnded() {
     !reviewVideoPaused;
     document.getElementById("playPauseIcon").src = "play.svg";
+  }
+
+  function slowDown() {
+    playbackRate = Math.max(0.25, playbackRate - 0.25);
+  }
+
+  function speedUp() {
+    playbackRate = Math.min(2, playbackRate + 0.25);
   }
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
@@ -76,6 +86,28 @@
         event.preventDefault();
         break;
     }
+
+    switch (event.key) {
+      case "-":
+        letLoop();
+        event.preventDefault();
+        break;
+    }
+
+    switch (event.key) {
+      case "[":
+        slowDown();
+        event.preventDefault();
+        break;
+    }
+
+    switch (event.key) {
+      case "]":
+        speedUp();
+        event.preventDefault();
+        break;
+    }
+
   }
 </script>
 
@@ -90,6 +122,8 @@
         <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
             loop
             bind:this={videoElement}
+            bind:paused={reviewVideoPaused}
+            bind:playbackRate={playbackRate}
             bind:paused={reviewVideoPaused}
             on:ended={handleVideoEnded} />
       </Pane>
@@ -107,22 +141,21 @@
 
   <!-- Pause/Play button-->
   <button on:click={playPause} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="play.svg">
+    <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="pause.svg" alt="paused icon">
   </button>
 
-  <!-- Loop button-->
-  <button on:click={letLoop} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="not-looped.svg">
+  <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+    <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="loop.svg" alt="play icon">
   </button>
 
   <!-- Slow down video button-->
-  <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg">
+  <button on:click={slowDown} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+    <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg" alt="turtle icon to indicate slow down">
   </button>
 
   <!-- Speed up video button-->
-  <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg">
+  <button on:click={speedUp} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+    <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
   </button>
 
    <button on:click={prevVideo} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
