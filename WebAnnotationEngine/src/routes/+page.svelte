@@ -27,14 +27,14 @@
     <Splitpanes class="p-4" style="height: 100%">
       <Pane class="rounded-xl" minSize={20}>
         <!-- Video to review -->
-        <video class="w-full h-full" src="ReviewVideos/all_work_and_no_play_rh_wire.mp4"
+        <video class="w-full h-full" src="ReviewVideos/gtsignstudy4a.8039-after-2023_01_25_23_09_44.022-0.mp4"
             loop
             bind:paused={reviewVideoPaused} />
       </Pane>
       <Pane class="rounded-xl" minSize={15}>
         <!-- Reference video -->
         <video class="w-full h-full"
-            src="ReviewVideos/all_work_and_no_play_rh_wire.mp4"
+            src="ReviewVideos/after.mp4"
             controls loop />
       </Pane>
     </Splitpanes>
@@ -56,7 +56,7 @@
 
   <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
     <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg">
-  </button>
+  </button> 
 
    <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
     <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="previous.svg">
