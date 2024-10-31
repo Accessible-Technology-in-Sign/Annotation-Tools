@@ -1,6 +1,8 @@
 <script>
   import { Pane, Splitpanes } from 'svelte-splitpanes';
+  let videoElement;
   let reviewVideoPaused = true;
+  let reviewVideoLooped = true;
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
@@ -8,6 +10,18 @@
   // the reference video too.
   function playPause() {
     reviewVideoPaused = !reviewVideoPaused;
+    document.getElementById("playPauseIcon").src = reviewVideoPaused ? "play.svg" : "pause.svg";
+  }
+
+  function letLoop() {
+    reviewVideoLooped = !reviewVideoLooped;
+    videoElement.loop = reviewVideoLooped;
+    document.getElementById("loopIcon").src = reviewVideoLooped ? "not-looped.svg" : "loop.svg";
+  }
+
+  function handleVideoEnded() {
+    !reviewVideoPaused;
+    document.getElementById("playPauseIcon").src = "play.svg";
   }
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
@@ -55,6 +69,13 @@
     if (currReviewVideo < videoData[currReferenceVideo].reviewVideos.length - 1) {
       currReviewVideo++;
     }
+
+    switch (event.key) {
+      case "-":
+        letLoop();
+        event.preventDefault();
+        break;
+    }
   }
 </script>
 
@@ -68,7 +89,9 @@
         <!-- Video to review -->
         <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
             loop
-            bind:paused={reviewVideoPaused} />
+            bind:this={videoElement}
+            bind:paused={reviewVideoPaused}
+            on:ended={handleVideoEnded} />
       </Pane>
       <Pane class="rounded-xl" minSize={15}>
         <!-- Reference video -->
@@ -81,18 +104,23 @@
 
 <!-- Video controls -->
 <div class="w-full h-20 flex items-center justify-start">
+
+  <!-- Pause/Play button-->
   <button on:click={playPause} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="pause.svg">
+    <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="play.svg">
   </button>
 
-  <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
-    <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="loop.svg">
+  <!-- Loop button-->
+  <button on:click={letLoop} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
+    <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="not-looped.svg">
   </button>
 
+  <!-- Slow down video button-->
   <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
     <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg">
   </button>
 
+  <!-- Speed up video button-->
   <button class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3">
     <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg">
   </button>
