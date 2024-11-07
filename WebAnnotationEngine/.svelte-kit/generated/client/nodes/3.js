@@ -1,0 +1,1 @@
+export { default as component } from "../../../../src/routes/annotation/+page.svelte";
