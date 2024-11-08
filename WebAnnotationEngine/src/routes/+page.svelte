@@ -2,47 +2,67 @@
   import { Pane, Splitpanes } from 'svelte-splitpanes';
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
-  let playbackRate = 1;
+  let revPlaybackRate = 1;
+
+  let referenceVideoPaused = true;
+  let referenceVideoLooped = true;
+  let refPlaybackRate = 1;
 
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
-  function playPause() {
+  function revPlayPause() {
     reviewVideoPaused = !reviewVideoPaused;
   }
 
-  function toggleLoop() {
+  function revToggleLoop() {
     reviewVideoLooped = !reviewVideoLooped;
   }
 
-  function slowDown() {
-    playbackRate = Math.max(0.25, playbackRate - 0.25);
+  function revSlowDown() {
+    revPlaybackRate = Math.max(0.25, revPlaybackRate - 0.25);
   }
 
-  function speedUp() {
-    playbackRate = Math.min(2, playbackRate + 0.25);
+  function revSpeedUp() {
+    revPlaybackRate = Math.min(2, revPlaybackRate + 0.25);
+  }
+
+  function refPlayPause() {
+    referenceVideoPaused = !referenceVideoPaused;
+  }
+
+  function refToggleLoop() {
+    referenceVideoLooped = !referenceVideoLooped;
+  }
+
+  function refSlowDown() {
+    refPlaybackRate = Math.max(0.25, refPlaybackRate - 0.25);
+  }
+
+  function refSpeedUp() {
+    refPlaybackRate = Math.min(2, refPlaybackRate + 0.25);
   }
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
   function onKeyPress(event) {
     switch (event.key) {
       case " ":
-        playPause();
+        revPlayPause();
         break;
       case "-":
-        toggleLoop();
+        revToggleLoop();
         break;
       case "0":
-        prevVideo();
+        revPrevVideo();
         break;
       case "=":
         nextVideo();
         break;
       case "[":
-        slowDown();
+        revSlowDown();
         break;
       case "]":
-        speedUp();
+        revSpeedUp();
         break;
       default:
         return;
@@ -50,7 +70,7 @@
 
     event.preventDefault();
   }
-
+  
   const videoData = [
     {
       referenceVideo: "/ReviewVideos/all_work_and_no_play_rh_wire.mp4",
@@ -71,12 +91,14 @@
   function prevVideo() {
     if (currReviewVideo > 0) {
       currReviewVideo--;
+      currReferenceVideo++;
     }
   }
 
   function nextVideo() {
     if (currReviewVideo < videoData[currReferenceVideo].reviewVideos.length - 1) {
       currReviewVideo++;
+      currReferenceVideo++;
     }
   }
 
@@ -93,13 +115,15 @@
         <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
             loop={reviewVideoLooped}
             bind:paused={reviewVideoPaused}
-            bind:playbackRate={playbackRate} />
+            bind:playbackRate={revPlaybackRate} />
       </Pane>
       <Pane class="rounded-xl" minSize={15}>
         <!-- Reference video -->
         <video class="w-full h-full"
             src={videoData[currReferenceVideo].referenceVideo}
-            controls loop />
+            loop={referenceVideoLooped}
+            bind:paused={referenceVideoPaused}
+            bind:playbackRate={refPlaybackRate} />
       </Pane>
     </Splitpanes>
 </div>
@@ -107,47 +131,102 @@
 <!-- Video controls -->
 <div class="w-full h-20 flex items-center justify-start">
 
-  <!-- Pause/Play button-->
-  <button on:click={playPause}
-      class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors">
-    <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
-        src="{reviewVideoPaused ? "play" : "pause"}.svg"
-        alt="paused icon">
-  </button>
+  <!-- Review Video controls -->
+  <div class="w-1/2 h-20 flex items-center justify-start">
+    <!-- Pause/Play button-->
+    <button on:click={revPlayPause}
+        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors" 
+        tabindex="-1">
+      <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+          src="{reviewVideoPaused ? "play" : "pause"}.svg"
+          alt="paused icon">
+    </button>
 
-  <button on:click={toggleLoop}
-      class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors">
-    <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
-        src="{reviewVideoLooped ? "loop" : "not-looped" }.svg"
-        alt="play icon">
-  </button>
+    <button on:click={revToggleLoop}
+        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+        tabindex="-1">
+      <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+          src="{reviewVideoLooped ? "loop" : "not-looped" }.svg"
+          alt="play icon">
+    </button>
 
-  <div class="join m-3">
-      <!-- Slow down video button-->
-      <button on:click={slowDown} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white p-2 md:p-2 lg:p-2.5 xl:p-3 rounded-md join-item transition-colors">
-        <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg" alt="turtle icon to indicate slow down">
-      </button>
+    <div class="join m-3">
+        <!-- Slow down video button-->
+        <button on:click={revSlowDown}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white p-2 md:p-2 lg:p-2.5 xl:p-3 rounded-md join-item transition-colors"
+          tabindex="-1">
+          <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg" alt="turtle icon to indicate slow down">
+        </button>
 
-      <!-- Playback rate reporter -->
-      <div class="bg-[#D9D9D9] flex text-black w-20 rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
-        <div class="flex items-center m-auto">{playbackRate.toFixed(2)}&times;</div>
-      </div>
+        <!-- Playback rate reporter -->
+        <div class="bg-[#D9D9D9] flex text-black w-20 rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
+          <div class="flex items-center m-auto">{revPlaybackRate.toFixed(2)}&times;</div>
+        </div>
 
-      <!-- Speed up video button-->
-      <button on:click={speedUp} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md  p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
-        <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
-      </button>
+        <!-- Speed up video button-->
+        <button on:click={revSpeedUp} 
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md  p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
+          tabindex="-1">
+          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
+        </button>
+    </div>
+
+    <!-- Previous video -->
+    <div class="join m-3">
+        <button on:click={prevVideo}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
+          tabindex="-1">
+          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="previous.svg" alt="previous video icon">
+        </button>
+
+        <!-- Next video -->
+        <button on:click={nextVideo}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
+          tabindex="-1">
+          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="next.svg" alt="next video icon">
+        </button>
+    </div>
   </div>
 
-  <!-- Previous video -->
-  <div class="join m-3">
-      <button on:click={prevVideo} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
-        <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="previous.svg">
-      </button>
+  <!-- Reference Video buttons -->
+    <div class="w-1/2 h-20 flex items-center justify-end">
+    <!-- Pause/Play button-->
+    <button on:click={refPlayPause}
+        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+        tabindex="-1">
+      <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+          src="{referenceVideoPaused ? "play" : "pause"}.svg"
+          alt="paused icon">
+    </button>
 
-      <!-- Next video -->
-      <button on:click={nextVideo} class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
-        <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="next.svg">
-      </button>
+    <button on:click={refToggleLoop}
+        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+        tabindex="-1">
+      <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+          src="{referenceVideoLooped ? "loop" : "not-looped" }.svg"
+          alt="play icon">
+    </button>
+
+    <div class="join m-3">
+        <!-- Slow down video button-->
+        <button on:click={refSlowDown} 
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white p-2 md:p-2 lg:p-2.5 xl:p-3 rounded-md join-item transition-colors"
+          tabindex="-1">
+          <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg" alt="turtle icon to indicate slow down">
+        </button>
+
+        <!-- Playback rate reporter -->
+        <div class="bg-[#D9D9D9] flex text-black w-20 rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
+          <div class="flex items-center m-auto">{refPlaybackRate.toFixed(2)}&times;</div>
+        </div>
+
+        <!-- Speed up video button-->
+        <button on:click={refSpeedUp}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md  p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
+          tabindex="-1">
+          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
+        </button>
+    </div>
   </div>
+
 </div>
