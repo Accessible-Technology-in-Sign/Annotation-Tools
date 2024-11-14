@@ -91,14 +91,12 @@
   function prevVideo() {
     if (currReviewVideo > 0) {
       currReviewVideo--;
-      currReferenceVideo++;
     }
   }
 
   function nextVideo() {
     if (currReviewVideo < videoData[currReferenceVideo].reviewVideos.length - 1) {
       currReviewVideo++;
-      currReferenceVideo++;
     }
   }
 
