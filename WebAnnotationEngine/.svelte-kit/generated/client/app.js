@@ -11,7 +11,7 @@ export const server_loads = [];
 
 export const dictionary = {
 		"/": [2],
-		"/annotation": [3]
+		"/annotation/[word]": [3]
 	};
 
 export const hooks = {

@@ -1,4 +1,6 @@
 {
 	"/": [],
-	"/annotation": []
+	"/annotation/[word]": [
+		"src/routes/annotation/[word]/+page.js"
+	]
 }

@@ -1,17 +1,31 @@
 <script>
-  let batches = ["B words", "Body parts", "Shapes"]; // Example data for batches
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+
+  let videoData = {};
+  let batches = []; // Example data for batches
   let words = []; // Words in the selected batch
   let selectedBatch = null;
 
-  const batchData = {
-    "B words": ["bacon", "banana", "bank"],
-    "Body parts": ["hand", "foot", "leg", "arm"],
-    "Shapes": ["square", "star"]
-  };
+  onMount(async () => {
+  try {
+    const response = await fetch('/videoData.json');
+    if (!response.ok) throw new Error(`Failed to load JSON: ${response.statusText}`);
+    videoData = await response.json();
+    batches = Object.keys(videoData.batches);
+  } catch (error) {
+    console.error("Error loading video data:", error);
+  }
+});
+
 
   function selectBatch(batch) {
     selectedBatch = batch;
-    words = batchData[batch] || [];
+    words = Object.keys(videoData.batches[batch]);
+  }
+
+  function startAnnotating(word) {
+    goto(`/annotation/${encodeURIComponent(word)}`);
   }
 </script>
 
@@ -73,7 +87,7 @@
     <h3>{selectedBatch ? `${selectedBatch} - Words` : "Words"}</h3>
     {#if selectedBatch}
       {#each words as word}
-        <div class="word-item">
+        <div class="word-item" on:click={() => startAnnotating(word)}>
           {word}
         </div>
       {/each}
