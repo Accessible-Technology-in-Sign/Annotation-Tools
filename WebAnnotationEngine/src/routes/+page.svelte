@@ -1,230 +1,97 @@
 <script>
-  import { Pane, Splitpanes } from 'svelte-splitpanes';
-  let reviewVideoPaused = true;
-  let reviewVideoLooped = true;
-  let revPlaybackRate = 1;
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
 
-  let referenceVideoPaused = true;
-  let referenceVideoLooped = true;
-  let refPlaybackRate = 1;
+  let videoData = {};
+  let batches = []; // Example data for batches
+  let words = []; // Words in the selected batch
+  let selectedBatch = null;
 
-  let currReferenceVideo = 0;
-  let currReviewVideo = 0;
+  onMount(async () => {
+  try {
+    const response = await fetch('/videoData.json');
+    if (!response.ok) throw new Error(`Failed to load JSON: ${response.statusText}`);
+    videoData = await response.json();
+    batches = Object.keys(videoData.batches);
+  } catch (error) {
+    console.error("Error loading video data:", error);
+  }
+});
 
-  function revPlayPause() {
-    reviewVideoPaused = !reviewVideoPaused;
+
+  function selectBatch(batch) {
+    selectedBatch = batch;
+    words = Object.keys(videoData.batches[batch]);
   }
 
-  function revToggleLoop() {
-    reviewVideoLooped = !reviewVideoLooped;
+  function startAnnotating(word) {
+    goto(`/annotation/${encodeURIComponent(word)}`);
   }
-
-  function revSlowDown() {
-    revPlaybackRate = Math.max(0.25, revPlaybackRate - 0.25);
-  }
-
-  function revSpeedUp() {
-    revPlaybackRate = Math.min(2, revPlaybackRate + 0.25);
-  }
-
-  function refPlayPause() {
-    referenceVideoPaused = !referenceVideoPaused;
-  }
-
-  function refToggleLoop() {
-    referenceVideoLooped = !referenceVideoLooped;
-  }
-
-  function refSlowDown() {
-    refPlaybackRate = Math.max(0.25, refPlaybackRate - 0.25);
-  }
-
-  function refSpeedUp() {
-    refPlaybackRate = Math.min(2, refPlaybackRate + 0.25);
-  }
-
-  // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
-  function onKeyPress(event) {
-    switch (event.key) {
-      case " ":
-        revPlayPause();
-        break;
-      case "-":
-        revToggleLoop();
-        break;
-      case "0":
-        revPrevVideo();
-        break;
-      case "=":
-        nextVideo();
-        break;
-      case "[":
-        revSlowDown();
-        break;
-      case "]":
-        revSpeedUp();
-        break;
-      default:
-        return;
-    }
-
-    event.preventDefault();
-  }
-  
-  const videoData = [
-    {
-      referenceVideo: "/ReviewVideos/all_work_and_no_play_rh_wire.mp4",
-      reviewVideos: [
-         "/ReviewVideos/all_work_and_no_play_rh_wire.mp4",
-         "/ReviewVideos/coming_up_with_killer_sound_bites_rh_wire.mp4",
-         "/ReviewVideos/did_you_have_a_good_time_rh_wire.mp4"
-      ]
-    },
-    {
-      referenceVideo: "/ReviewVideos/coming_up_with_killer_sound_bites_rh_wire.mp4",
-      reviewVideos: [
-         "/ReviewVideos/coming_up_with_killer_sound_bites_rh_wire.mp4"
-      ]
-    }
-  ];
-
-  function prevVideo() {
-    if (currReviewVideo > 0) {
-      currReviewVideo--;
-    }
-  }
-
-  function nextVideo() {
-    if (currReviewVideo < videoData[currReferenceVideo].reviewVideos.length - 1) {
-      currReviewVideo++;
-    }
-  }
-
 </script>
 
-<svelte:window on:keypress={onKeyPress} />
+<style>
+  .title {
+    width: 100%;
+    text-align: left;
+    font-size: 4rem;
+    margin-left: 4rem;
+  }
+  .container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+  }
 
-<!-- Video viewer -->
-<div class="h-full w-full">
-    <!-- See svelte-splitpanes https://orefalo.github.io/svelte-splitpanes/ -->
-    <Splitpanes class="p-4" style="height: 100%">
-      <Pane class="rounded-xl" minSize={20}>
-        <!-- Video to review -->
-        <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
-            loop={reviewVideoLooped}
-            bind:paused={reviewVideoPaused}
-            bind:playbackRate={revPlaybackRate} />
-      </Pane>
-      <Pane class="rounded-xl" minSize={15}>
-        <!-- Reference video -->
-        <video class="w-full h-full"
-            src={videoData[currReferenceVideo].referenceVideo}
-            loop={referenceVideoLooped}
-            bind:paused={referenceVideoPaused}
-            bind:playbackRate={refPlaybackRate} />
-      </Pane>
-    </Splitpanes>
-</div>
+  .batch-list, .word-list {
+    flex: 1; 
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 0.5rem;
+    overflow-y: auto; 
+  }
 
-<!-- Video controls -->
-<div class="w-full h-20 flex items-center justify-start">
+  .batch-item, .word-item {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    text-align: center;
+  }
 
-  <!-- Review Video controls -->
-  <div class="w-1/2 h-20 flex items-center justify-start">
-    <!-- Pause/Play button-->
-    <button on:click={revPlayPause}
-        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors" 
-        tabindex="-1">
-      <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
-          src="{reviewVideoPaused ? "play" : "pause"}.svg"
-          alt="paused icon">
-    </button>
+  .batch-item:hover, .word-item:hover {
+    background-color: #d1d5db;
+  }
 
-    <button on:click={revToggleLoop}
-        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
-        tabindex="-1">
-      <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
-          src="{reviewVideoLooped ? "loop" : "not-looped" }.svg"
-          alt="play icon">
-    </button>
+  h3 {
+    margin-top: 0;
+  }
+</style>
 
-    <div class="join m-3">
-        <!-- Slow down video button-->
-        <button on:click={revSlowDown}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white p-2 md:p-2 lg:p-2.5 xl:p-3 rounded-md join-item transition-colors"
-          tabindex="-1">
-          <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg" alt="turtle icon to indicate slow down">
-        </button>
+<div class="title">ASL Annotation</div>
 
-        <!-- Playback rate reporter -->
-        <div class="bg-[#D9D9D9] flex text-black w-20 rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
-          <div class="flex items-center m-auto">{revPlaybackRate.toFixed(2)}&times;</div>
-        </div>
-
-        <!-- Speed up video button-->
-        <button on:click={revSpeedUp} 
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md  p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
-          tabindex="-1">
-          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
-        </button>
-    </div>
-
-    <!-- Previous video -->
-    <div class="join m-3">
-        <button on:click={prevVideo}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
-          tabindex="-1">
-          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="previous.svg" alt="previous video icon">
-        </button>
-
-        <!-- Next video -->
-        <button on:click={nextVideo}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
-          tabindex="-1">
-          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="next.svg" alt="next video icon">
-        </button>
-    </div>
+<div class="container">
+  <!-- Batch List -->
+  <div class="batch-list">
+    <h3>Batches</h3>
+    {#each batches as batch}
+      <div class="batch-item" on:click={() => selectBatch(batch)}>
+        {batch}
+      </div>
+    {/each}
   </div>
 
-  <!-- Reference Video buttons -->
-    <div class="w-1/2 h-20 flex items-center justify-end">
-    <!-- Pause/Play button-->
-    <button on:click={refPlayPause}
-        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
-        tabindex="-1">
-      <img id="playPauseIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
-          src="{referenceVideoPaused ? "play" : "pause"}.svg"
-          alt="paused icon">
-    </button>
-
-    <button on:click={refToggleLoop}
-        class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
-        tabindex="-1">
-      <img id="loopIcon" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
-          src="{referenceVideoLooped ? "loop" : "not-looped" }.svg"
-          alt="play icon">
-    </button>
-
-    <div class="join m-3">
-        <!-- Slow down video button-->
-        <button on:click={refSlowDown} 
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white p-2 md:p-2 lg:p-2.5 xl:p-3 rounded-md join-item transition-colors"
-          tabindex="-1">
-          <img class="w-8 h-8 md:w-7.5 md:h-7.5 lg:w-8 lg:h-8 xl:w-9 xl:h-9" src="slow-down-dark.svg" alt="turtle icon to indicate slow down">
-        </button>
-
-        <!-- Playback rate reporter -->
-        <div class="bg-[#D9D9D9] flex text-black w-20 rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors">
-          <div class="flex items-center m-auto">{refPlaybackRate.toFixed(2)}&times;</div>
+  <!-- Word List -->
+  <div class="word-list">
+    <h3>{selectedBatch ? `${selectedBatch} - Words` : "Words"}</h3>
+    {#if selectedBatch}
+      {#each words as word}
+        <div class="word-item" on:click={() => startAnnotating(word)}>
+          {word}
         </div>
-
-        <!-- Speed up video button-->
-        <button on:click={refSpeedUp}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md  p-2 md:p-2 lg:p-2.5 xl:p-3 join-item transition-colors"
-          tabindex="-1">
-          <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="speed-up-dark.svg" alt="bunny icon to indicate speed up">
-        </button>
-    </div>
+      {/each}
+    {/if}
   </div>
 
 </div>
