@@ -13,6 +13,8 @@
   let referenceVideoLooped = true;
   let refPlaybackRate = 1;
 
+  let label = null;
+
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
@@ -30,22 +32,6 @@
 
   function revSpeedUp() {
     revPlaybackRate = Math.min(2, revPlaybackRate + 0.25);
-  }
-
-  function refPlayPause() {
-    referenceVideoPaused = !referenceVideoPaused;
-  }
-
-  function refToggleLoop() {
-    referenceVideoLooped = !referenceVideoLooped;
-  }
-
-  function refSlowDown() {
-    refPlaybackRate = Math.max(0.25, refPlaybackRate - 0.25);
-  }
-
-  function refSpeedUp() {
-    refPlaybackRate = Math.min(2, refPlaybackRate + 0.25);
   }
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
@@ -74,6 +60,11 @@
     }
 
     event.preventDefault();
+  }
+
+
+  function setLabel(newLabel) {
+    label = label === newLabel ? null : newLabel;
   }
   
   const videoData = [
@@ -105,6 +96,21 @@
     }
   }
 
+    function refPlayPause() {
+    referenceVideoPaused = !referenceVideoPaused;
+  }
+
+  function refToggleLoop() {
+    referenceVideoLooped = !referenceVideoLooped;
+  }
+
+  function refSlowDown() {
+    refPlaybackRate = Math.max(0.25, refPlaybackRate - 0.25);
+  }
+
+  function refSpeedUp() {
+    refPlaybackRate = Math.min(2, refPlaybackRate + 0.25);
+  }
 </script>
 
 <svelte:window on:keypress={onKeyPress} />
@@ -137,7 +143,7 @@
   <div class="w-full h-20 flex items-center justify-start">
 
     <!-- Review Video controls -->
-    <div class="w-1/2 h-20 flex items-center justify-start">
+    <div class="w-1/3 h-20 flex items-center justify-start">
       <!-- Pause/Play button-->
       <button on:click={revPlayPause}
           class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors" 
@@ -193,8 +199,53 @@
       </div>
     </div>
 
+    <!-- Annotation labeling -->
+    <div class="w-1/3 h-20 flex items-center justify-start">
+      <!-- Good button -->
+      <button on:click={() => setLabel("Good")}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          tabindex="-1">
+        <img id="good-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+            src="/thumbs-up.svg"
+            alt="thumbs up icon">
+      </button>
+
+      <!-- Variant button -->
+      <button on:click={() => setLabel("Variant")}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          tabindex="-1">
+        <img id="variant-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+            src="/variant.svg"
+            alt="icon">
+      </button>
+
+      <!-- Bad button -->
+      <button on:click={() => setLabel("Bad")}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          tabindex="-1">
+        <img id="bad-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+            src="/thumbs-down.svg"
+            alt="thumbs down icon">
+      </button>
+
+      <!-- Further Review button -->
+      <button on:click={() => setLabel("Further Review")}
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          tabindex="-1">
+        <img id="further-review-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
+            src="/archive.svg"
+            alt="archive icon">
+      </button>
+
+      <!-- Label -->
+      <div class="flex flex-col w-100px min-w-[4rem] md:min-w-[6rem] lg:min-w-[8rem]">
+        <p class="text-sm md:text-md lg:text-lg">Current Label:</p>
+        <p class="text-sm md:text-md lg:text-lg w-100">{label || "None"}</p>
+      </div>
+    </div>
+
     <!-- Reference Video buttons -->
-      <div class="w-1/2 h-20 flex items-center justify-end">
+    <div class="w-1/3 h-20 flex items-center justify-end">
       <!-- Pause/Play button-->
       <button on:click={refPlayPause}
           class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
