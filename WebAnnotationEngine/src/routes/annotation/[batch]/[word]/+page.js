@@ -2,18 +2,18 @@ export async function load({ params, fetch }) {
   const { batch, word } = params;
   console.log('Loading data for batch:', batch, 'and word:', word);
 
-  const response = await fetch('/videoData.json');
+  const response = await fetch('/api/batches');
   console.log('Fetch response status:', response.status);
 
   if (!response.ok) {
-    console.error('Failed to fetch video data');
-    throw new Error('Failed to load video data');
+    console.error('Failed to fetch batches');
+    throw new Error('Failed to load batch data');
   }
 
-  const videoData = await response.json();
-  console.log('Fetched video data:', videoData);
+  const batches = await response.json();
+  console.log('Fetched batches:', batches);
 
-  const selectedBatch = videoData.batches[batch];
+  const selectedBatch = batches[batch];
   if (!selectedBatch) {
     throw new Error(`Batch "${batch}" not found`);
   }
@@ -28,6 +28,6 @@ export async function load({ params, fetch }) {
   return {
     batch,
     word,
-    selectedVideoData
+    selectedVideoData,
   };
 }

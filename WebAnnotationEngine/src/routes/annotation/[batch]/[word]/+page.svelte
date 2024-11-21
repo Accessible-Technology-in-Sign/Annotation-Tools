@@ -66,23 +66,6 @@
   function setLabel(newLabel) {
     label = label === newLabel ? null : newLabel;
   }
-  
-  const videoData = [
-    {
-      referenceVideo: "/ReviewVideos/all_work_and_no_play_rh_wire.mp4",
-      reviewVideos: [
-         "/ReviewVideos/all_work_and_no_play_rh_wire.mp4",
-         "/ReviewVideos/coming_up_with_killer_sound_bites_rh_wire.mp4",
-         "/ReviewVideos/did_you_have_a_good_time_rh_wire.mp4"
-      ]
-    },
-    {
-      referenceVideo: "/ReviewVideos/coming_up_with_killer_sound_bites_rh_wire.mp4",
-      reviewVideos: [
-         "/ReviewVideos/coming_up_with_killer_sound_bites_rh_wire.mp4"
-      ]
-    }
-  ];
 
   function prevVideo() {
     if (currReviewVideo > 0) {
@@ -91,7 +74,7 @@
   }
 
   function nextVideo() {
-    if (currReviewVideo < videoData[currReferenceVideo].reviewVideos.length - 1) {
+    if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
   }
@@ -123,7 +106,8 @@
       <Splitpanes class="p-4" style="height: 100%">
         <Pane class="rounded-xl" minSize={20}>
           <!-- Video to review -->
-          <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
+          <video class="w-full h-full" 
+              src={`/ReviewVideos/${batch}/${selectedVideoData.reviews[currReviewVideo]}`}
               loop={reviewVideoLooped}
               bind:paused={reviewVideoPaused}
               bind:playbackRate={revPlaybackRate} />
@@ -131,7 +115,7 @@
         <Pane class="rounded-xl" minSize={15}>
           <!-- Reference video -->
           <video class="w-full h-full"
-              src={videoData[currReferenceVideo].referenceVideo}
+              src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
               loop={referenceVideoLooped}
               bind:paused={referenceVideoPaused}
               bind:playbackRate={refPlaybackRate} />

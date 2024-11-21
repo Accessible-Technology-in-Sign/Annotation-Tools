@@ -2,26 +2,30 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
 
-  let videoData = {};
-  let batches = []; // Example data for batches
-  let words = []; // Words in the selected batch
+
+  let batches = {}; 
+  let batchList = [];
+  let words = []; 
   let selectedBatch = null;
 
   onMount(async () => {
   try {
-    const response = await fetch('/videoData.json');
-    if (!response.ok) throw new Error(`Failed to load JSON: ${response.statusText}`);
-    videoData = await response.json();
-    batches = Object.keys(videoData.batches);
+    const response = await fetch('/api/batches');
+    if (!response.ok) throw new Error('Failed to load batches');
+    batches = await response.json();
+    console.log('Batches loaded:', batches); // Log the fetched data
+    batchList = Object.keys(batches); // Extract batch names
+    console.log('Batch list:', batchList); // Log the batch list
   } catch (error) {
-    console.error("Error loading video data:", error);
+    console.error('Error loading batches:', error);
   }
 });
 
 
+
   function selectBatch(batch) {
     selectedBatch = batch;
-    words = Object.keys(videoData.batches[batch]);
+    words = Object.keys(batches[batch]);
   }
 
   function startAnnotating(word) {
@@ -76,7 +80,7 @@
   <!-- Batch List -->
   <div class="batch-list">
     <h3>Batches</h3>
-    {#each batches as batch}
+    {#each batchList as batch}
       <div class="batch-item" on:click={() => selectBatch(batch)}>
         {batch}
       </div>
