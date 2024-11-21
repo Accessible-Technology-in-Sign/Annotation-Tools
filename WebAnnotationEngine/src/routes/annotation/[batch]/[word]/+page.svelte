@@ -44,7 +44,7 @@
         revToggleLoop();
         break;
       case "0":
-        revPrevVideo();
+        prevVideo();
         break;
       case "=":
         nextVideo();
