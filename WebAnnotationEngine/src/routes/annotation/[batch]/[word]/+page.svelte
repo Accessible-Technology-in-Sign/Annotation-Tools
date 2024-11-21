@@ -20,6 +20,7 @@
 
   function revPlayPause() {
     reviewVideoPaused = !reviewVideoPaused;
+    console.log(reviewVideoPaused);
   }
 
   function revToggleLoop() {
@@ -41,7 +42,7 @@
         revPlayPause();
         break;
       case "-":
-        revToggleLoop();
+        revToggleLoop ();
         break;
       case "0":
         prevVideo();
@@ -54,6 +55,18 @@
         break;
       case "]":
         revSpeedUp();
+        break;
+      case "z":
+        setLabel("Good");
+        break;
+      case "x":
+        setLabel("Variant");
+        break;
+      case "c":
+        setLabel("Bad");
+        break;
+      case "v":
+        setLabel("Further Review");
         break;
       default:
         return;
@@ -77,9 +90,14 @@
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
+    reviewVideoPaused = false;
+    const videoElement = document.getElementById('review-video');
+    if (videoElement) {
+        videoElement.play();
+    }
   }
 
-    function refPlayPause() {
+  function refPlayPause() {
     referenceVideoPaused = !referenceVideoPaused;
   }
 
@@ -106,7 +124,7 @@
       <Splitpanes class="p-4" style="height: 100%">
         <Pane class="rounded-xl" minSize={20}>
           <!-- Video to review -->
-          <video class="w-full h-full" 
+          <video id="review-video" class="w-full h-full" 
               src={`/ReviewVideos/${batch}/${selectedVideoData.reviews[currReviewVideo]}`}
               loop={reviewVideoLooped}
               bind:paused={reviewVideoPaused}
