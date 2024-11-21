@@ -115,20 +115,24 @@
 
 <svelte:window on:keypress={onKeyPress} />
 
+<!-- Header information -->
+<div class="flex justify-start w-full">
+  <h1 class="text-3xl justify-start pl-5 py-3">Annotating: {word}</h1>
+</div>
+
 <!-- Video viewer -->
-<h1>Annotating: {word}</h1>
 {#if selectedVideoData}
   <div class="h-full w-full">
       <!-- See svelte-splitpanes https://orefalo.github.io/svelte-splitpanes/ -->
       <Splitpanes class="p-4" style="height: 100%">
-        <Pane class="rounded-xl" minSize={20}>
+        <Pane minSize={20} maxSize={63}>
           <!-- Video to review -->
           <video class="w-full h-full" src={videoData[currReferenceVideo].reviewVideos[currReviewVideo]}
               loop={reviewVideoLooped}
               bind:paused={reviewVideoPaused}
               bind:playbackRate={revPlaybackRate} />
         </Pane>
-        <Pane class="rounded-xl" minSize={15}>
+        <Pane minSize={15} maxSize={63}>
           <!-- Reference video -->
           <video class="w-full h-full"
               src={videoData[currReferenceVideo].referenceVideo}
@@ -238,9 +242,29 @@
       </button>
 
       <!-- Label -->
-      <div class="flex flex-col w-100px min-w-[4rem] md:min-w-[6rem] lg:min-w-[8rem]">
-        <p class="text-sm md:text-md lg:text-lg">Current Label:</p>
-        <p class="text-sm md:text-md lg:text-lg w-100">{label || "None"}</p>
+      <div class="flex w-100px ml-3 min-w-[3rem] md:min-w-[6rem] lg:min-w-[8rem] h-20">
+        <div 
+          class="flex items-center gap-2 p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 rounded-md transition-colors whitespace-nowrap"
+          class:bg-green-200={label === "Good"}
+          class:bg-yellow-200={label === "Variant"}
+          class:bg-red-200={label === "Bad"}
+          class:bg-blue-200={label === "Further Review"}
+          class:bg-[#D9D9D9]={!label}>
+          {#if label}
+            {#if label === "Good"}
+              <img src="/thumbs-up.svg" class="w-6 h-6" alt="thumbs up icon" />
+            {:else if label === "Variant"}
+              <img src="/variant.svg" class="w-6 h-6" alt="variant icon" />
+            {:else if label === "Bad"}
+              <img src="/thumbs-down.svg" class="w-6 h-6" alt="thumbs down icon" />
+            {:else if label === "Further Review"}
+              <img src="/archive.svg" class="w-6 h-6" alt="archive icon" />
+            {/if}
+            <p class="text-sm md:text-md lg:text-lg">{label}</p>
+          {:else}
+            <p class="text-sm md:text-md lg:text-lg">None</p>
+          {/if}
+        </div>
       </div>
     </div>
 
