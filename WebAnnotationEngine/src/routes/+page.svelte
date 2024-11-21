@@ -25,8 +25,9 @@
   }
 
   function startAnnotating(word) {
-    goto(`/annotation/${encodeURIComponent(word)}`);
+    goto(`/annotation/${encodeURIComponent(selectedBatch)}/${encodeURIComponent(word)}`);
   }
+
 </script>
 
 <style>

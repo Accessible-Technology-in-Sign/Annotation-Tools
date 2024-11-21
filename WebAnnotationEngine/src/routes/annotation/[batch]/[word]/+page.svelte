@@ -1,7 +1,7 @@
 <script>
   // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
   export let data;
-  const { word, selectedVideoData } = data;
+  const { batch, word, selectedVideoData } = data;
 
   import { Pane, Splitpanes } from 'svelte-splitpanes';
 
@@ -116,7 +116,7 @@
 <svelte:window on:keypress={onKeyPress} />
 
 <!-- Video viewer -->
-<h1>Annotating: {word}</h1>
+<h1>Annotating batch: {batch}, word: {word}</h1>
 {#if selectedVideoData}
   <div class="h-full w-full">
       <!-- See svelte-splitpanes https://orefalo.github.io/svelte-splitpanes/ -->
