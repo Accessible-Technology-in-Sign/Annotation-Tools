@@ -90,7 +90,6 @@
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
-    reviewVideoPaused = false;
     const videoElement = document.getElementById('review-video');
     if (videoElement) {
         videoElement.play();
@@ -133,7 +132,8 @@
           <!-- Video to review -->
           <video id="review-video" class="w-full h-full" 
               src={`/ReviewVideos/${batch}/${selectedVideoData.reviews[currReviewVideo]}`}
-              loop={reviewVideoLooped}
+              loop={reviewVideoLooped}   
+              autoplay
               bind:paused={reviewVideoPaused}
               bind:playbackRate={revPlaybackRate} />
         </Pane>
@@ -142,6 +142,7 @@
           <video class="w-full h-full"
               src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
               loop={referenceVideoLooped}
+              autoplay
               bind:paused={referenceVideoPaused}
               bind:playbackRate={refPlaybackRate} />
         </Pane>
