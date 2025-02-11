@@ -131,7 +131,7 @@
         <Pane minSize={20} maxSize={63}>
           <!-- Video to review -->
           <video id="review-video" class="w-full h-full" 
-              src={`/ReviewVideos/${batch}/${selectedVideoData.reviews[currReviewVideo]}`}
+              src={`${selectedVideoData.reviews[currReviewVideo]}`}
               loop={reviewVideoLooped}   
               autoplay
               bind:paused={reviewVideoPaused}
@@ -140,7 +140,7 @@
         <Pane minSize={15} maxSize={63}>
           <!-- Reference video -->
           <video class="w-full h-full"
-              src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
+              src={`${selectedVideoData.reference}`}
               loop={referenceVideoLooped}
               autoplay
               bind:paused={referenceVideoPaused}

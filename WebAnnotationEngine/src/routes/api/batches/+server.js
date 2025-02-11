@@ -2,39 +2,62 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET() {
-  const basePath = path.resolve('static/ReviewVideos');
-  const batches = {};
+  const configPath = path.resolve('src/routes/config/videoConfig.json');
 
-  const batchDirs = fs.readdirSync(basePath, { withFileTypes: true }).filter(dir => dir.isDirectory());
+  try {
+    const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
-  for (const batchDir of batchDirs) {
-    const batchName = batchDir.name;
-    const batchPath = path.join(basePath, batchName);
-    batches[batchName] = {};
+    const reviewSource = path.resolve(configData.review_source)
+    const referenceSource = path.resolve(configData.reference_source);
+    const batchesToLoad = configData.batches || [];
+    const batches = {};
+    const relativePath = (fullPath) => fullPath.replace(path.resolve('static'), '');
 
-    const files = fs.readdirSync(batchPath).filter(file => file.endsWith('.mp4'));
+    const batchDirs = batchesToLoad.length > 0
+      ? batchesToLoad.map(batch => ({ name: batch }))
+      : fs.readdirSync(reviewSource, { withFileTypes: true }).filter(dir => dir.isDirectory());
 
-    for (const file of files) {
-      const referenceMatch = file.match(/^(\w+)\.mp4$/);
-      if (referenceMatch) {
-        const word = referenceMatch[1];
-        if (!batches[batchName][word]) {
-          batches[batchName][word] = { reference: null, reviews: [] };
+    for (const batchDir of batchDirs) {
+      const batchName = batchDir.name;
+      const batchPath = path.join(reviewSource, batchName);
+      batches[batchName] = {};
+
+      const signDirs = fs.readdirSync(batchPath, { withFileTypes: true }).filter(dir => dir.isDirectory());
+
+      for (const signDir of signDirs) {
+        const signName = signDir.name;
+        const signPath = path.join(batchPath, signName);
+        const videos = fs.readdirSync(signPath).filter(file => file.endsWith('.mp4'));
+        
+        if (!batches[batchName][signName]) {
+          batches[batchName][signName] = { reference: null, reviews: [] };
         }
-        batches[batchName][word].reference = file;
-        continue;
-      }
 
-      const reviewMatch = file.match(/-(\w+)-/);
-      if (reviewMatch) {
-        const word = reviewMatch[1];
-        if (!batches[batchName][word]) {
-          batches[batchName][word] = { reference: null, reviews: [] };
+        for (const file of videos) {
+          const filePath = path.join(signPath, file);
+          batches[batchName][signName].reviews.push(relativePath(filePath));
         }
-        batches[batchName][word].reviews.push(file);
       }
     }
-  }
+    const referenceFiles = fs.readdirSync(referenceSource).filter(file => file.endsWith('.mp4'));
+        
 
-  return new Response(JSON.stringify(batches), { status: 200 });
+    for (const file of referenceFiles) {
+      const signName = path.parse(file).name;
+      const referencePath = path.join(referenceSource, file);
+
+      for (const batchName in batches) {
+        if (batches[batchName][signName]) {
+          batches[batchName][signName].reference = relativePath(referencePath);
+        }
+      }
+    }
+
+    console.log("Final Batch Data:", JSON.stringify(batches, null, 2));
+
+    return new Response(JSON.stringify(batches), { status: 200 });
+  } catch (error) {
+    console.error("Error loading video configuration:", error);
+    return new Response(JSON.stringify({ error: "Failed to load video data" }), { status: 500 });
+  }
 }
