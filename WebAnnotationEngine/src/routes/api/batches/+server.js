@@ -1,3 +1,18 @@
+/*
+Put videoConfig.json in src/routes/config 
+Put review videos like this: ReviewVideos/BatchName/WordName/all the videos
+Put all reference videos in 1 folder
+
+example videoConfig.json:
+{
+    "sign_list": "src/config/sign_list.txt", --> doesn't do anything rn
+    "review_source": "static/ReviewVideos",
+    "reference_source": "static/ReferenceVideos",
+    "language": "en",
+    "batches": ["Batch 2"] or [] for all batches
+}
+*/
+
 import fs from 'fs';
 import path from 'path';
 
