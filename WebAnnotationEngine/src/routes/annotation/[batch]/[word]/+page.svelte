@@ -18,6 +18,8 @@
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
+  let comments = "";
+
   function revPlayPause() {
     reviewVideoPaused = !reviewVideoPaused;
     console.log(reviewVideoPaused);
@@ -86,7 +88,12 @@
     }
   }
 
+  function saveAnnot(){
+    comments = "";
+  }
+
   function nextVideo() {
+    saveAnnot();
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
@@ -137,13 +144,26 @@
               bind:paused={reviewVideoPaused}
               bind:playbackRate={revPlaybackRate} />
         </Pane>
-        <Pane minSize={15} maxSize={63}>
-          <!-- Reference video -->
-          <video class="w-full h-full"
-              src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
-              loop={referenceVideoLooped}
-              bind:paused={referenceVideoPaused}
-              bind:playbackRate={refPlaybackRate} />
+        <Pane>
+          <Splitpanes horizontal={true}>
+            <Pane minSize={15} maxSize={80}>
+              <!-- Reference video -->
+              <video class="w-full h-full"
+                  src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
+                  loop={referenceVideoLooped}
+                  bind:paused={referenceVideoPaused}
+                  bind:playbackRate={refPlaybackRate} />
+            </Pane>
+            <Pane>
+              <!-- Comment panel -->
+              <div class="w-full h-full bg-aquamarine p-0">
+                <textarea bind:value={comments}
+                  class="w-full h-full p-10 text-left align-top resize-none outline-none bg-transparent text-black text-mn"
+                  placeholder="Add any comments here..."
+                ></textarea>
+              </div>
+            </Pane>
+          </Splitpanes>
         </Pane>
       </Splitpanes>
   </div>
@@ -205,6 +225,7 @@
             tabindex="-1">
             <img class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8" src="/next.svg" alt="next video icon">
           </button>
+          
       </div>
     </div>
 
