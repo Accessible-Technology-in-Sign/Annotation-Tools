@@ -15,14 +15,13 @@
 
   let label = null;
 
+  let comments = "";
+
   let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
-  let comments = "";
-
   function revPlayPause() {
     reviewVideoPaused = !reviewVideoPaused;
-    console.log(reviewVideoPaused);
   }
 
   function revToggleLoop() {
@@ -88,20 +87,26 @@
     }
   }
 
-  function saveAnnot(){
+  function resetState(){
+    reviewVideoPaused = true;
+    referenceVideoPaused = true;
+
+    label = null;
     comments = "";
   }
 
   function nextVideo() {
-    saveAnnot();
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
-    reviewVideoPaused = false;
+
+    resetState();
+
     const videoElement = document.getElementById('review-video');
     if (videoElement) {
         videoElement.play();
     }
+
   }
 
   function refPlayPause() {
