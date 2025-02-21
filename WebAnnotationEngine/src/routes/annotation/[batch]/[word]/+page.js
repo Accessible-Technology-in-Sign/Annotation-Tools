@@ -23,7 +23,7 @@ export async function load({ params, fetch }) {
     throw new Error(`Word "${word}" not found in batch "${batch}"`);
   }
 
-  console.log('Selected video data:', selectedVideoData);
+  console.log('[INFO]: Selected video data:', selectedVideoData);
 
   return {
     batch,

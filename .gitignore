@@ -19,3 +19,11 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Review and reference videos
+WebAnnotationEngine/static/ReviewVideos/
+WebAnnotationEngine/static/ReferenceVideos/
+
+# Config files
+WebAnnotationEngine/src/routes/config/videoConfig.json
+WebAnnotationEngine/src/routes/config/sign_list.txt

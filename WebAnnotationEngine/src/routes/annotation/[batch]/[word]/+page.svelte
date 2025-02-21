@@ -90,7 +90,6 @@
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
-    reviewVideoPaused = false;
     const videoElement = document.getElementById('review-video');
     if (videoElement) {
         videoElement.play();
@@ -132,16 +131,18 @@
         <Pane minSize={20} maxSize={63}>
           <!-- Video to review -->
           <video id="review-video" class="w-full h-full" 
-              src={`/ReviewVideos/${batch}/${selectedVideoData.reviews[currReviewVideo]}`}
-              loop={reviewVideoLooped}
+              src={`${selectedVideoData.reviews[currReviewVideo]}`}
+              loop={reviewVideoLooped}   
+              autoplay
               bind:paused={reviewVideoPaused}
               bind:playbackRate={revPlaybackRate} />
         </Pane>
         <Pane minSize={15} maxSize={63}>
           <!-- Reference video -->
           <video class="w-full h-full"
-              src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
+              src={`${selectedVideoData.reference}`}
               loop={referenceVideoLooped}
+              autoplay
               bind:paused={referenceVideoPaused}
               bind:playbackRate={refPlaybackRate} />
         </Pane>
