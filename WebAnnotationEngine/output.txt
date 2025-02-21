@@ -1,0 +1,10 @@
+
+> webannotationengine@0.0.1 dev
+> vite dev
+
+
+  VITE v5.4.14  ready in 618 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help

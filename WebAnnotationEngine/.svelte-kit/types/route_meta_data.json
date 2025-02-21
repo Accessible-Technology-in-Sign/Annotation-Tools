@@ -5,5 +5,11 @@
 	],
 	"/api/batches": [
 		"src/routes/api/batches/+server.js"
+	],
+	"/api/video/reference/[filename]": [
+		"src/routes/api/video/reference/[filename]/+server.js"
+	],
+	"/api/video/review/[batch]/[sign]/[filename]": [
+		"src/routes/api/video/review/[batch]/[sign]/[filename]/+server.js"
 	]
 }

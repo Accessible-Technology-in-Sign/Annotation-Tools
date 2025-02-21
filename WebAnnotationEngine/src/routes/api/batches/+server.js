@@ -3,6 +3,7 @@ Put videoConfig.json in src/routes/config
 Put review videos like this: ReviewVideos/BatchName/WordName/all the videos
 Put all reference videos in 1 folder
 Put sign_list.txt in src/routes/config and list words to annotate or leave enpty if want all
+(It does not strictly have to be under static)
 
 example videoConfig.json:
 {
@@ -27,6 +28,8 @@ export async function GET() {
 
     const reviewSource = path.resolve(configData.review_source)
     const referenceSource = path.resolve(configData.reference_source);
+    const reviewAPI = '/api/video/review/';
+    const referenceAPI = '/api/video/reference/';
     const batchesToLoad = configData.batches || [];
     const batches = {};
 
@@ -64,8 +67,12 @@ export async function GET() {
 
         //add all videos to each sign
         for (const file of videos) {
-          const filePath = path.join(signPath, file);
-          batches[batchName][signName].reviews.push(relativePath(filePath));
+          //const filePath = path.join(signPath, file);
+          //batches[batchName][signName].reviews.push(relativePath(filePath));
+
+          // Have the pages refer to the API when loading the videos (such that it can load outside of static)
+          const filePath = path.join(reviewAPI, batchName, signName, file);
+          batches[batchName][signName].reviews.push(filePath);
         }
       }
       console.log(batchName + " length: " + Object.keys(batches[batchName]).length);
@@ -83,10 +90,14 @@ export async function GET() {
       }
       const signName = path.parse(file).name;
       const referencePath = path.join(referenceSource, file);
+      const apiPath = path.join(referenceAPI, file)
+      console.log("Reference Source: " + referenceSource + " file: " + file + " Full Path: " + referencePath);
+
 
       for (const batchName in batches) {
         if (batches[batchName][signName]) {
-          batches[batchName][signName].reference = relativePath(referencePath);
+          //batches[batchName][signName].reference = relativePath(referencePath);
+          batches[batchName][signName].reference = apiPath;
         }
       }
     }
