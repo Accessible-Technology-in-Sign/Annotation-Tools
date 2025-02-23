@@ -84,6 +84,7 @@
       batch,
       label: newLabel,
     };
+    label = newLabel;
   }
 
   function prevVideo() {
