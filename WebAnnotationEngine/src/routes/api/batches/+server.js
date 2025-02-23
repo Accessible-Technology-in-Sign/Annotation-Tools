@@ -54,7 +54,6 @@ export async function GET() {
       for (const signDir of signDirs) {
         //if sign list contains words, skip those not specified
         if (signListData.trim() != "" && !signListByLine.includes(signDir.name)) {
-          console.log("skipped: " + signDir.name);
           continue;
         }
         const signName = signDir.name;
@@ -75,7 +74,6 @@ export async function GET() {
           batches[batchName][signName].reviews.push(filePath);
         }
       }
-      console.log(batchName + " length: " + Object.keys(batches[batchName]).length);
       if (Object.keys(batches[batchName]).length == 0) {
         delete batches[batchName];
       }
@@ -91,7 +89,6 @@ export async function GET() {
       const signName = path.parse(file).name;
       const referencePath = path.join(referenceSource, file);
       const apiPath = path.join(referenceAPI, file)
-      console.log("Reference Source: " + referenceSource + " file: " + file + " Full Path: " + referencePath);
 
 
       for (const batchName in batches) {
@@ -101,8 +98,6 @@ export async function GET() {
         }
       }
     }
-
-    console.log("Final Batch Data:", JSON.stringify(batches, null, 2));
 
     return new Response(JSON.stringify(batches), { status: 200 });
   } catch (error) {

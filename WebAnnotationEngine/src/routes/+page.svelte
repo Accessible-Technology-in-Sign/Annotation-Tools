@@ -3,24 +3,49 @@
   import { goto } from '$app/navigation';
 
 
+  let username = null;
+  let isLoggedIn = false;
+  let loading = true;
+
   let batches = {}; 
   let batchList = [];
   let words = []; 
   let selectedBatch = null;
 
-  onMount(async () => {
-  try {
-    const response = await fetch('/api/batches');
-    if (!response.ok) throw new Error('Failed to load batches');
-    batches = await response.json();
-    console.log('Batches loaded:', batches); // Log the fetched data
-    batchList = Object.keys(batches); // Extract batch names
-    console.log('Batch list:', batchList); // Log the batch list
-  } catch (error) {
-    console.error('Error loading batches:', error);
-  }
-});
 
+  onMount(async () => {
+    if (typeof window !== "undefined") {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        username = storedUsername;
+      }
+    }
+
+    isLoggedIn = !!username;  
+    loading = false;
+
+    try {
+      const response = await fetch('/api/batches');
+      if (!response.ok) throw new Error('Failed to load batches');
+      batches = await response.json();
+      batchList = Object.keys(batches); 
+    } catch (error) {
+      console.error('Error loading batches:', error);
+    }
+  });
+
+  function saveUsername() {
+    if (username.trim() !== "") {
+      localStorage.setItem("username", username);
+      isLoggedIn = true;
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("username"); 
+    isLoggedIn = false;
+    username = null;
+  }
 
 
   function selectBatch(batch) {
@@ -29,6 +54,10 @@
   }
 
   function startAnnotating(word) {
+    if (!isLoggedIn) {
+      alert("Please enter your name to start annotating.");
+      return;
+    }
     goto(`/annotation/${encodeURIComponent(selectedBatch)}/${encodeURIComponent(word)}`);
   }
 
@@ -41,6 +70,34 @@
     font-size: 4rem;
     margin-left: 4rem;
   }
+
+  .user-info {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  .logout-button {
+    background: red;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .logout-button:hover {
+    background: darkred;
+  }
+
   .container {
     display: flex;
     width: 100%;
@@ -74,29 +131,58 @@
   }
 </style>
 
-<div class="title">ASL Annotation</div>
-
-<div class="container">
-  <!-- Batch List -->
-  <div class="batch-list">
-    <h3>Batches</h3>
-    {#each batchList as batch}
-      <div class="batch-item" on:click={() => selectBatch(batch)}>
-        {batch}
+<!-- Login Section -->
+{#if loading}
+  <div class="fixed inset-0 flex items-center justify-center bg-white">
+    <h2 class="text-2xl font-bold">Loading...</h2>
+  </div>
+{:else}
+  {#if !isLoggedIn}
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white p-6 rounded shadow-lg">
+        <h2 class="text-lg">Enter your name to start annotating:</h2>
+        <input
+          type="text"
+          bind:value={username}
+          class="border p-2 rounded w-full"
+          placeholder="Enter your name..."
+          on:keypress={(event) => event.key === 'Enter' && saveUsername()}
+        />
+        <button on:click={saveUsername} class="mt-4 bg-blue-500 text-white p-2 rounded w-full">
+          Start
+        </button>
       </div>
-    {/each}
-  </div>
+    </div>
+  {/if}
 
-  <!-- Word List -->
-  <div class="word-list">
-    <h3>{selectedBatch ? `${selectedBatch} - Words` : "Words"}</h3>
-    {#if selectedBatch}
-      {#each words as word}
-        <div class="word-item" on:click={() => startAnnotating(word)}>
-          {word}
-        </div>
-      {/each}
-    {/if}
+  {#if isLoggedIn}
+  <div class="title">ASL Annotation</div>
+  <div class="user-info">
+    <span>Hello, {username}</span>
+    <button on:click={logout} class="logout-button">Log Out</button>
   </div>
+    <div class="container">
+      <!-- Batch List -->
+      <div class="batch-list">
+        <h3>Batches</h3>
+        {#each batchList as batch}
+          <div class="batch-item" on:click={() => selectBatch(batch)}>
+            {batch}
+          </div>
+        {/each}
+      </div>
 
-</div>
+      <!-- Word List -->
+      <div class="word-list">
+        <h3>{selectedBatch ? `${selectedBatch} - Words` : "Words"}</h3>
+        {#if selectedBatch}
+          {#each words as word}
+            <div class="word-item" on:click={() => startAnnotating(word)}>
+              {word}
+            </div>
+          {/each}
+        {/if}
+      </div>
+  </div>
+  {/if}
+{/if}

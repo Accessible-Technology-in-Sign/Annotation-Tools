@@ -1,9 +1,7 @@
 export async function load({ params, fetch }) {
   const { batch, word } = params;
-  console.log('Loading data for batch:', batch, 'and word:', word);
 
   const response = await fetch('/api/batches');
-  console.log('Fetch response status:', response.status);
 
   if (!response.ok) {
     console.error('Failed to fetch batches');
@@ -11,7 +9,6 @@ export async function load({ params, fetch }) {
   }
 
   const batches = await response.json();
-  console.log('Fetched batches:', batches);
 
   const selectedBatch = batches[batch];
   if (!selectedBatch) {
@@ -23,7 +20,6 @@ export async function load({ params, fetch }) {
     throw new Error(`Word "${word}" not found in batch "${batch}"`);
   }
 
-  console.log('[INFO]: Selected video data:', selectedVideoData);
 
   return {
     batch,
