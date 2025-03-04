@@ -155,7 +155,7 @@
             <Pane minSize={15} maxSize={80}>
               <!-- Reference video -->
               <video class="w-full h-full"
-                  src={`/ReviewVideos/${batch}/${selectedVideoData.reference}`}
+                  src={`${selectedVideoData.reference}`}
                   loop={referenceVideoLooped}
                   bind:paused={referenceVideoPaused}
                   bind:playbackRate={refPlaybackRate} />
