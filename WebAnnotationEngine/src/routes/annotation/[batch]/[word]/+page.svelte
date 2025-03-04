@@ -3,6 +3,8 @@
   export let data;
   const { batch, word, selectedVideoData } = data;
 
+  let username = localStorage.getItem("username");
+
   import { Pane, Splitpanes } from 'svelte-splitpanes';
 
   let reviewVideoPaused = true;
@@ -78,7 +80,13 @@
 
 
   function setLabel(newLabel) {
-    label = label === newLabel ? null : newLabel;
+    const annotation = {
+      user: username,
+      word,
+      batch,
+      label: newLabel,
+    };
+    label = newLabel;
   }
 
   function prevVideo() {
@@ -125,6 +133,7 @@
     refPlaybackRate = Math.min(2, refPlaybackRate + 0.25);
   }
 </script>
+
 
 <svelte:window on:keypress={onKeyPress} />
 
