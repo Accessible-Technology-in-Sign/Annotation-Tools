@@ -38,6 +38,41 @@
     revPlaybackRate = Math.min(2, revPlaybackRate + 0.25);
   }
 
+  //dummy function to create fake userIDs
+  //replace once userID is actually implemented
+  function getUser(){
+    let length = 5 + Math.floor(Math.random() * 10);
+    let user = '';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let counter = 0;
+    
+    while (counter < length) {
+      user += chars.charAt(Math.floor(Math.random() * chars.length));
+      counter += 1;
+    }
+    // return "testDuplicateUser"
+    return user;
+  }
+
+  async function addAnnot(tag) {
+    const response = await fetch("http://127.0.0.1:5000/add_annot", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          label: tag,
+          sign: word,
+          user: getUser(),
+          comments: comments,
+          time: Date.now(),
+          video_path: selectedVideoData.reviews[currReviewVideo]
+        })
+    });
+    const data = await response.json();
+    console.log(data.message);
+}
+
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
   function onKeyPress(event) {
     switch (event.key) {
@@ -104,6 +139,9 @@
   }
 
   function nextVideo() {
+    
+    addAnnot(label);
+
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
