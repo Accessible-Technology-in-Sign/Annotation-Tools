@@ -1,9 +1,0 @@
-{
-	"/": [],
-	"/annotation/[batch]/[word]": [
-		"src/routes/annotation/[batch]/[word]/+page.js"
-	],
-	"/api/batches": [
-		"src/routes/api/batches/+server.js"
-	]
-}
