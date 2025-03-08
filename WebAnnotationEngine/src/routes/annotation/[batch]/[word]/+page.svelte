@@ -6,6 +6,7 @@
   let username = localStorage.getItem("username");
 
   import { Pane, Splitpanes } from 'svelte-splitpanes';
+  import { goto } from '$app/navigation';
 
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
@@ -106,15 +107,15 @@
   function nextVideo() {
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
+      const videoElement = document.getElementById('review-video');
+      if (videoElement) {
+          videoElement.play();
+      }
+    }  else {
+      if (confirm("You've reached the last video. Return to the selection page?")) {
+        goto('/');
+      }
     }
-
-    //resetState(); // 
-
-    const videoElement = document.getElementById('review-video');
-    if (videoElement) {
-        videoElement.play();
-    }
-
   }
 
   function refPlayPause() {
@@ -166,6 +167,7 @@
               <video class="w-full h-full"
                   src={`${selectedVideoData.reference}`}
                   loop={referenceVideoLooped}
+                  autoplay
                   bind:paused={referenceVideoPaused}
                   bind:playbackRate={refPlaybackRate} />
             </Pane>
