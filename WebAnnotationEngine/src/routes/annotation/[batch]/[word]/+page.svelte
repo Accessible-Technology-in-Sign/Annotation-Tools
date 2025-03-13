@@ -286,7 +286,7 @@
     <div class="w-1/3 h-20 flex items-center justify-start">
       <!-- Good button -->
       <button on:click={() => setLabel("Good")}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-2 transition-colors"
           tabindex="-1">
         <img id="good-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
             src="/thumbs-up.svg"
@@ -295,7 +295,7 @@
 
       <!-- Variant button -->
       <button on:click={() => setLabel("Variant")}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-2 transition-colors"
           tabindex="-1">
         <img id="variant-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
             src="/variant.svg"
@@ -304,7 +304,7 @@
 
       <!-- Bad button -->
       <button on:click={() => setLabel("Bad")}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-2 transition-colors"
           tabindex="-1">
         <img id="bad-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
             src="/thumbs-down.svg"
@@ -313,7 +313,7 @@
 
       <!-- Further Review button -->
       <button on:click={() => setLabel("Further Review")}
-          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
+          class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-2 transition-colors"
           tabindex="-1">
         <img id="further-review-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
             src="/archive.svg"
@@ -321,9 +321,9 @@
       </button>
 
       <!-- Label -->
-      <div class="flex w-100px ml-3 min-w-[3rem] md:min-w-[6rem] lg:min-w-[8rem] h-20">
+      <div class="flex w-auto ml-2 min-w-[3rem] md:min-w-[6rem] lg:min-w-[8rem] h-20">
         <div 
-          class="flex items-center gap-2 p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 rounded-md transition-colors whitespace-nowrap"
+          class="absolute flex w-200 items-center gap-2 p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 rounded-md transition-colors whitespace-nowrap"
           class:bg-green-200={label === "Good"}
           class:bg-yellow-200={label === "Variant"}
           class:bg-red-200={label === "Bad"}
