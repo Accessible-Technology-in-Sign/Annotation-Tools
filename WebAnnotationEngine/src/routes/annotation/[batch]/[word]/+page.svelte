@@ -1,11 +1,14 @@
 <script>
   // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
   export let data;
+  import { Pane, Splitpanes } from 'svelte-splitpanes';
+  import {writable} from "svelte/store"
+
+  export const userAnnot = writable({})
+
   const { batch, word, selectedVideoData } = data;
 
   let username = localStorage.getItem("username");
-
-  import { Pane, Splitpanes } from 'svelte-splitpanes';
 
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
@@ -38,39 +41,50 @@
     revPlaybackRate = Math.min(2, revPlaybackRate + 0.25);
   }
 
-  //dummy function to create fake userIDs
-  //replace once userID is actually implemented
-  function getUser(){
-    let length = 5 + Math.floor(Math.random() * 10);
-    let user = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let counter = 0;
-    
-    while (counter < length) {
-      user += chars.charAt(Math.floor(Math.random() * chars.length));
-      counter += 1;
-    }
-    // return "testDuplicateUser"
-    return user;
+  let savedLabel = null;
+  let savedComments = "";
+  $: {
+    userAnnot.subscribe(store => {
+      if (store[currReviewVideo]) {
+        savedLabel = store[currReviewVideo].annot_label;
+        savedComments = store[currReviewVideo].annot_comments;
+      } else {
+        savedLabel = null;
+        savedComments = "";
+      }
+    });
+
+    label = savedLabel;
+    comments = savedComments;
   }
 
-  async function addAnnot(tag) {
-    const response = await fetch("http://127.0.0.1:5000/add_annot", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          label: tag,
-          sign: word,
-          user: getUser(),
-          comments: comments,
-          time: Date.now(),
-          video_path: selectedVideoData.reviews[currReviewVideo]
-        })
-    });
-    const data = await response.json();
-    console.log(data.message);
+  async function addAnnot(annot_label, annot_comments, annot_user) {
+    
+    if (annot_label !== savedLabel || annot_comments!== savedComments) {
+      userAnnot.update(store => ({
+        ...store,
+        [currReviewVideo]: {annot_label, annot_comments}
+      }));
+
+      const response = await fetch("http://127.0.0.1:5000/add_annot", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            label: annot_label,
+            sign: word,
+            user: annot_user,
+            comments: annot_comments,
+            time: Date.now(),
+            video_path: selectedVideoData.reviews[currReviewVideo]
+          })
+      });
+      const data = await response.json();
+      console.log(data.message);
+
+    }
+
 }
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
@@ -134,8 +148,8 @@
   }
 
   function resetState(){
-    reviewVideoPaused = true;
-    referenceVideoPaused = true;
+    // reviewVideoPaused = true;
+    // referenceVideoPaused = true;
 
     label = null;
     comments = "";
@@ -143,13 +157,13 @@
 
   function nextVideo() {
     
-    addAnnot(label);
+    addAnnot(label, comments, username);
 
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
     }
 
-    //resetState(); // 
+    resetState();
 
     const videoElement = document.getElementById('review-video');
     if (videoElement) {
