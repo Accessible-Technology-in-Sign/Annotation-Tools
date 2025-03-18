@@ -75,6 +75,9 @@
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
   function onKeyPress(event) {
+    if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
+        return;
+    }
     switch (event.key) {
       case " ":
         revPlayPause();
