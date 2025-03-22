@@ -29,8 +29,46 @@ export async function GET({ params, request }) {
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
       const chunkSize = end - start + 1;
 
-      const fileStream = fs.createReadStream(filePath, { start, end });
-      return new Response(fileStream, {
+      const nodeStream = fs.createReadStream(filePath, { start, end });
+      let controllerClosed = false;
+      
+      const webStream = new ReadableStream({
+        start(controller) {
+          nodeStream.on('data', chunk => {
+            if (!controllerClosed) {
+              try {
+                controller.enqueue(chunk);
+              } catch (err) {
+                console.warn("Failed to enqueue chunk:", err.message);
+                controllerClosed = true;
+                nodeStream.destroy(); 
+              }
+            }
+          });
+      
+          nodeStream.on('end', () => {
+            if (!controllerClosed) {
+              controller.close();
+              controllerClosed = true;
+            }
+          });
+      
+          nodeStream.on('error', err => {
+            if (!controllerClosed) {
+              controller.error(err);
+              controllerClosed = true;
+            }
+          });
+        },
+      
+        cancel() {
+          controllerClosed = true;
+          nodeStream.destroy();
+        }
+      });
+      
+
+      return new Response(webStream, {
         status: 206,
         headers: {
           'Content-Range': `bytes ${start}-${end}/${fileSize}`,
@@ -42,7 +80,46 @@ export async function GET({ params, request }) {
     }
 
     // Default full file response
-    return new Response(fs.createReadStream(filePath), {
+    const nodeStream = fs.createReadStream(filePath, { start, end });
+    let controllerClosed = false;
+    
+    const webStream = new ReadableStream({
+      start(controller) {
+        nodeStream.on('data', chunk => {
+          if (!controllerClosed) {
+            try {
+              controller.enqueue(chunk);
+            } catch (err) {
+              console.warn("Failed to enqueue chunk:", err.message);
+              controllerClosed = true;
+              nodeStream.destroy(); 
+            }
+          }
+        });
+    
+        nodeStream.on('end', () => {
+          if (!controllerClosed) {
+            controller.close();
+            controllerClosed = true;
+          }
+        });
+    
+        nodeStream.on('error', err => {
+          if (!controllerClosed) {
+            controller.error(err);
+            controllerClosed = true;
+          }
+        });
+      },
+    
+      cancel() {
+        controllerClosed = true;
+        nodeStream.destroy();
+      }
+    });
+    
+
+    return new Response(webStream, {
       headers: {
         'Content-Type': 'video/mp4',
         'Content-Length': fileSize
@@ -54,3 +131,4 @@ export async function GET({ params, request }) {
     return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 }
+
