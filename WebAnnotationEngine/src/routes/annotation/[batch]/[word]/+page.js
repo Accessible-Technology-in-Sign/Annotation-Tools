@@ -20,7 +20,6 @@ export async function load({ params, fetch }) {
     throw new Error(`Word "${word}" not found in batch "${batch}"`);
   }
 
-
   return {
     batch,
     word,

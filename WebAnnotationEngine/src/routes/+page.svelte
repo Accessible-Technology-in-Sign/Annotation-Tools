@@ -34,10 +34,22 @@
     }
   });
 
-  function saveUsername() {
-    if (username.trim() !== "") {
+  async function saveUsername() {
+    if (username.trim() === "") return;
+
+    const res = await fetch("http://127.0.0.1:5000/check_user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+
+    const data = await res.json();
+
+    if (data.valid) {
       localStorage.setItem("username", username);
       isLoggedIn = true;
+    } else {
+      alert("Username not recognized. Please contact an admin.");
     }
   }
 

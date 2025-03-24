@@ -1,8 +1,8 @@
 import os
 
 class DBLogin:
-    USER = "user"
-    PSWD = "pswd"
+    USER = "root"
+    PSWD = "netherportais510"
 
 class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv(f"mysql+pymysql://{DBLogin.USER}:{DBLogin.PSWD}@localhost/labels", "sqlite:///database.db")
