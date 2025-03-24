@@ -46,3 +46,7 @@ reference_videos/
   ├── sign2.mp4
   ├── sign3.mp4
   ```
+
+  # Add users
+cd into flask_app and run python3 add_user.py <user_name_to_add>
+
