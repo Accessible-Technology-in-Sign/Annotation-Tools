@@ -1,0 +1,22 @@
+name: annotation-engine
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - blinker=1.9.0
+  - cffi=1.17.1
+  - click=8.1.8
+  - cryptography=44.0.1
+  - flask=3.1.0
+  - flask-cors=5.0.0
+  - flask-sqlalchemy=3.1.1
+  - greenlet=3.1.1
+  - itsdangerous=2.2.0
+  - jinja2=3.1.5
+  - markupsafe=3.0.2
+  - pycparser=2.22
+  - pymysql=1.1.1
+  - sqlalchemy=2.0.38
+  - typing_extensions=4.12.2
+  - werkzeug=3.1.3
+
