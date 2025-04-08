@@ -25,6 +25,8 @@ def home():
 
 @app.route('/add_annot', methods=['POST'])
 def add_annot():
+    if not User.query.filter_by(username=data["user"]).first():
+        return jsonify({"error": "User not found"}), 403
     data = request.json
     cmd = insert(Annot).values(
         sign=data['sign'],
@@ -47,6 +49,22 @@ def add_annot():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Failed to add annotation"}), 500
+    
+@app.route('/check_user', methods=['POST'])
+def check_user():
+    from models import db, User
+    data = request.json
+    username = data.get("username")
+
+    user = db.session.execute(
+        db.select(User).filter_by(username=username)
+    ).scalar()
+
+    if user:
+        return jsonify({"valid": True})
+    else:
+        return jsonify({"valid": False})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

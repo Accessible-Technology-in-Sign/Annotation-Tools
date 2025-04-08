@@ -31,3 +31,4 @@ WebAnnotationEngine/src/routes/config/sign_list.txt
 
 
 __pycache__/
+annot_venv/

@@ -13,3 +13,9 @@ class Annot(db.Model):
     time = db.Column(db.TIMESTAMP, default=datetime)
     label = db.Column(db.String(255), nullable=False)
     comments = db.Column(db.Text)
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(255), unique=True, nullable=False)

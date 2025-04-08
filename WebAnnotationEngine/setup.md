@@ -53,3 +53,7 @@ Then, run `python3 app.py`.
 
 Currently, we use a MySQL database, make sure you have MySQL installed on your computer. 
 In the `flask_app/config.py` file, change `USER` and `PSWD` to match your local setup. 
+
+#### Add users
+cd into flask_app and run python3 add_user.py <user_name_to_add>
+
