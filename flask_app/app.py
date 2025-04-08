@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models import db, Annot
@@ -31,7 +32,7 @@ def add_annot():
         label=data["label"],
         comments=data.get('comments', ""),
         time=datetime.fromtimestamp(data["time"] / 1000),
-        video_path=data["video_path"]
+        video_path=os.path.basename(data["video_path"])
     ).on_duplicate_key_update(
         sign=data['sign'],
         label=data["label"],
