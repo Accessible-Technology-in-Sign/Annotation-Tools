@@ -1,0 +1,26 @@
+{
+    "loading_user": "Loading...",
+    "login": "Enter your name to start annotating: ",
+    "login_validity": "Username not recognized. Please contact an admin.",
+    "login_placeholder": "Enter your name...",
+    "start": "Start",
+    
+    "title": "ASL Annotation",
+    "greeting": "Hello",
+    "log_out": "Log Out",
+    "batches": "Batches",
+    "words": "Words",
+
+    "header": "Annotating Batch",
+    "word": "word",
+    "hide_ref": "Hide Reference Video",
+    "show_ref": "Show Reference Video",
+    "comments": "Add any comments here...",
+    "label_good": "Good",
+    "label_bad": "Bad",
+    "label_variant": "Variant",
+    "label_further_review": "Further Review",
+    "none": "None",
+    "last_video": "You've reached the last video. Return to the selection page?",
+    "no_data": "No video data available for the word"
+}

@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
 
+  import { t } from 'svelte-i18n';
+  import { setupResult } from '../lib/i18n'
 
   let username = null;
   let isLoggedIn = false;
@@ -49,7 +51,7 @@
       localStorage.setItem("username", username);
       isLoggedIn = true;
     } else {
-      alert("Username not recognized. Please contact an admin.");
+      alert($t('login_validity'));
     }
   }
 
@@ -67,7 +69,7 @@
 
   function startAnnotating(word) {
     if (!isLoggedIn) {
-      alert("Please enter your name to start annotating.");
+      alert($t('login'));
       return;
     }
     goto(`/annotation/${encodeURIComponent(selectedBatch)}/${encodeURIComponent(word)}`);
@@ -144,57 +146,61 @@
 </style>
 
 <!-- Login Section -->
-{#if loading}
-  <div class="fixed inset-0 flex items-center justify-center bg-white">
-    <h2 class="text-2xl font-bold">Loading...</h2>
-  </div>
-{:else}
-  {#if !isLoggedIn}
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white p-6 rounded shadow-lg">
-        <h2 class="text-lg">Enter your name to start annotating:</h2>
-        <input
-          type="text"
-          bind:value={username}
-          class="border p-2 rounded w-full"
-          placeholder="Enter your name..."
-          on:keypress={(event) => event.key === 'Enter' && saveUsername()}
-        />
-        <button on:click={saveUsername} class="mt-4 bg-blue-500 text-white p-2 rounded w-full">
-          Start
-        </button>
-      </div>
+{#await setupResult}
+ <p>Loading translations...</p>
+{:then}
+  {#if loading}
+    <div class="fixed inset-0 flex items-center justify-center bg-white">
+      <h2 class="text-2xl font-bold">{$t('loading_user')}</h2>
     </div>
-  {/if}
-
-  {#if isLoggedIn}
-  <div class="title">ASL Annotation</div>
-  <div class="user-info">
-    <span>Hello, {username}</span>
-    <button on:click={logout} class="logout-button">Log Out</button>
-  </div>
-    <div class="container">
-      <!-- Batch List -->
-      <div class="batch-list">
-        <h3>Batches</h3>
-        {#each batchList as batch}
-          <div class="batch-item" on:click={() => selectBatch(batch)}>
-            {batch}
-          </div>
-        {/each}
+  {:else}
+    {#if !isLoggedIn}
+      <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white p-6 rounded shadow-lg">
+          <h2 class="text-lg">{$t('login')}</h2>
+          <input
+            type="text"
+            bind:value={username}
+            class="border p-2 rounded w-full"
+            placeholder={$t('login_placeholder')}
+            on:keypress={(event) => event.key === 'Enter' && saveUsername()}
+          />
+          <button on:click={saveUsername} class="mt-4 bg-blue-500 text-white p-2 rounded w-full">
+            {$t('start')}
+          </button>
+        </div>
       </div>
+    {/if}
 
-      <!-- Word List -->
-      <div class="word-list">
-        <h3>{selectedBatch ? `${selectedBatch} - Words` : "Words"}</h3>
-        {#if selectedBatch}
-          {#each words as word}
-            <div class="word-item" on:click={() => startAnnotating(word)}>
-              {word}
+    {#if isLoggedIn}
+    <div class="title">{$t('title')}</div>
+    <div class="user-info">
+      <span>{$t('greeting')}, {username}</span>
+      <button on:click={logout} class="logout-button">Log Out</button>
+    </div>
+      <div class="container">
+        <!-- Batch List -->
+        <div class="batch-list">
+          <h3>Batches</h3>
+          {#each batchList as batch}
+            <div class="batch-item" on:click={() => selectBatch(batch)}>
+              {batch}
             </div>
           {/each}
-        {/if}
-      </div>
-  </div>
+        </div>
+
+        <!-- Word List -->
+        <div class="word-list">
+          <h3>{selectedBatch ? `${selectedBatch} - ${$t('words')}` : $t('words')}</h3>
+          {#if selectedBatch}
+            {#each words as word}
+              <div class="word-item" on:click={() => startAnnotating(word)}>
+                {word}
+              </div>
+            {/each}
+          {/if}
+        </div>
+    </div>
+    {/if}
   {/if}
-{/if}
+{/await}
