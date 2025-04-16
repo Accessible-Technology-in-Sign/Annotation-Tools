@@ -176,12 +176,12 @@
     <div class="title">{$t('title')}</div>
     <div class="user-info">
       <span>{$t('greeting')}, {username}</span>
-      <button on:click={logout} class="logout-button">Log Out</button>
+      <button on:click={logout} class="logout-button">{$t('log_out')}</button>
     </div>
       <div class="container">
         <!-- Batch List -->
         <div class="batch-list">
-          <h3>Batches</h3>
+          <h3>{$t('batches')}</h3>
           {#each batchList as batch}
             <div class="batch-item" on:click={() => selectBatch(batch)}>
               {batch}

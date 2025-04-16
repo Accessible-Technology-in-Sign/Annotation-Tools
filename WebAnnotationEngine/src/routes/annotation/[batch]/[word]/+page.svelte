@@ -234,7 +234,7 @@
       <div class="flex flex-col h-screen">
         <!-- header -->
         <div class="shring-0 px-4 py-2 flex justify-between items-center">
-          <h2 class="text-3xl">{$t('header')}: {batch}, {$t(word)}: {word}</h2>
+          <h2 class="text-3xl">{$t('header')}: {batch}, {$t('word')}: {word}</h2>
           <div>
             <button on:click={toggleRefVisibility} class="visibility-button">
               {refVisible ? $t('hide_ref') : $t('show_ref')}
@@ -344,7 +344,7 @@
         <!-- Annotation labeling -->
         <div class="w-1/3 h-20 flex items-center justify-start">
           <!-- Good button -->
-          <button on:click={() => setLabel("Good")}
+          <button on:click={() => setLabel($t('label_good'))}
               class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
               tabindex="-1">
             <img id="good-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
@@ -353,7 +353,7 @@
           </button>
 
           <!-- Variant button -->
-          <button on:click={() => setLabel("Variant")}
+          <button on:click={() => setLabel($t('label_variant'))}
               class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
               tabindex="-1">
             <img id="variant-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
@@ -362,7 +362,7 @@
           </button>
 
           <!-- Bad button -->
-          <button on:click={() => setLabel("Bad")}
+          <button on:click={() => setLabel($t('label_bad'))}
               class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
               tabindex="-1">
             <img id="bad-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
@@ -371,7 +371,7 @@
           </button>
 
           <!-- Further Review button -->
-          <button on:click={() => setLabel("Further Review")}
+          <button on:click={() => setLabel($t('label_further_review'))}
               class="bg-[#D9D9D9] hover:bg-[#A9A9A9] text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-colors"
               tabindex="-1">
             <img id="further-review-button" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8"
@@ -389,13 +389,13 @@
               class:bg-blue-200={label === $t('label_further_review')}
               class:bg-[#D9D9D9]={!label}>
               {#if label}
-                {#if label === "Good"}
+                {#if label === $t('label_good')}
                   <img src="/thumbs-up.svg" class="w-6 h-6" alt="thumbs up icon" />
-                {:else if label === "Variant"}
+                {:else if label === $t('label_variant')}
                   <img src="/variant.svg" class="w-6 h-6" alt="variant icon" />
-                {:else if label === "Bad"}
+                {:else if label === $t('label_bad')}
                   <img src="/thumbs-down.svg" class="w-6 h-6" alt="thumbs down icon" />
-                {:else if label === "Further Review"}
+                {:else if label === $t('label_further_review')}
                   <img src="/archive.svg" class="w-6 h-6" alt="archive icon" />
                 {/if}
                 <p class="text-sm md:text-md lg:text-lg">{label}</p>
