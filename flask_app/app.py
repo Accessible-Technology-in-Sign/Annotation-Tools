@@ -5,6 +5,8 @@ from config import Config, DBLogin
 from datetime import datetime
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.exc import IntegrityError
+from flask import Response
+from google.cloud import storage
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
@@ -17,6 +19,18 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+#@app.route("/video/")
+#def get_video(filename):
+    #bucket_name = 'annotation_engine_videos'
+    #storage_client = storage.Client()
+    #bucket = storage_client.bucket(bucket_name)
+    #blob = bucket.blob(filename)
+
+   # def generate():
+    #    yield blob.download_as_bytes()i
+
+   # return Response(generat(), mimetype="video/mp4")
 
 @app.route('/')
 def home():
@@ -48,4 +62,5 @@ def add_annot():
         return jsonify({"error": "Failed to add annotation"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0', port=5000)
