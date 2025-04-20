@@ -5,7 +5,7 @@ import { Storage } from '@google-cloud/storage';
 
 const storage = new Storage();
 const bucketName = 'annotation_engine_videos';
-const reviewPrefix = 'ReviewVideos/';
+const reviewPrefix = 'ReviewSource/';
 
 export async function GET({ params, request }) {
   try {
