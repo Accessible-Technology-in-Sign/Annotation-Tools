@@ -4,42 +4,30 @@ import { Storage } from '@google-cloud/storage';
 /* API used to load review videos in from the filepath specified in the config file */
 
 const storage = new Storage();
-const bucketName = 'annotation_engine_videos';
-const reviewPrefix = 'ReviewSource/';
+const GCP_BUCKET = {
+  REVIEW_VIDEO_FOLDER : "ReviewSource/",
+  REFERENCE_VIDEO_FOLDER: "dpan_source_videos/",
+  BUCKET_NAME: "annotation_engine_videos"
+}
+
 
 export async function GET({ params, request }) {
   try {
-    const configPath = path.resolve('src/routes/config/videoConfig.json');
-    const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
     const { batch, sign, filename } = params;
-    const filePathInBucket = `${reviewPrefix}${batch}/${sign}/${filename}`;
+    const filePathInBucket = `${GCP_BUCKET.REVIEW_VIDEO_FOLDER}${batch}/${sign}/${filename}`;
     console.log(`Fetching review video: ${filePathInBucket}`);
 
-    // const baseDir = path.resolve(configData.review_source, batch, sign);
-    // const filePath = path.join(baseDir, filename);
-    // console.log(`The full filepath is: ${filePath}`);
-
-    const file = storage.bucket(bucketName).file(filePathInBucket);
-
-
-    // if (!fs.existsSync(filePath)) {
-    //   return new Response(JSON.stringify({ error: "Review file not found" }), { status: 404 });
-    // }
+    const file = storage.bucket(GCP_BUCKET.BUCKET_NAME).file(filePathInBucket);
 
     const [exists] = await file.exists();
     if (!exists) {
       return new Response(JSON.stringify({ error: 'Review file not found' }), { status: 404 });
     }
 
+    // Support video streaming with range requests
     const [metadata] = await file.getMetadata();
     const fileSize = parseInt(metadata.size, 10);
     const range = request.headers.get("range");
-
-    // // Support video streaming with range requests
-    // const stat = fs.statSync(filePath);
-    // const fileSize = stat.size;
-    // const range = request.headers.get("range");
 
     if (range) {
       const parts = range.replace(/bytes=/, "").split("-");
