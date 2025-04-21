@@ -51,10 +51,10 @@ export async function GET() {
     for (const file of reviewFiles) {
       if (!file.name.endsWith('.mp4')) continue;
 
-      const path = file.name.split("/");
-      if (path.length != 4) continue;
+      const fileParts = file.name.split("/");
+      if (fileParts.length != 4) continue;
 
-      const [, batchNum, signName, filename] = path;
+      const [, batchNum, signName, filename] = fileParts;
 
       //If batches specified, only include those
       if (batchesToLoad.length > 0 && !batchesToLoad.includes(batchNum)) continue;

@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app, origins=[Config.SVELTE_URI])
 
 #set app to update database
-app.config['SQLALCHEMY_DATABASE_URI'] = DBLogin.SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_DATABASE_URI'] = Config.SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = Config.SQLALCHEMY_TRACK_MODIFICATIONS
 
 db.init_app(app)

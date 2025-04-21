@@ -48,8 +48,8 @@ export async function GET({ params, request }) {
     }
 
     // Default full file response
-    const fillStream = file.createReadStream();
-    return new Response(file, {
+    const fullStream = file.createReadStream();
+    return new Response(fullStream, {
       headers: {
         'Content-Type': 'video/mp4',
         'Content-Length': fileSize

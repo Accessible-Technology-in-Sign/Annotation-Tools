@@ -70,6 +70,7 @@
           video_path: selectedVideoData.reviews[currReviewVideo]
         })
     });
+	
     const data = await response.json();
     console.log(data.message);
 }
