@@ -2,7 +2,11 @@
 A web-based annotation engine based on `SvelteKit`.
 
 
-### Getting started
+### Deployment
+
+Refer to [setup.md](setup.md) to set up and run the WebAnnotationEngine
+
+### Getting started (with Development)
 `cd` into the `WebAnnotationEngine` directory and run `npm install`, then run `npm run dev`. A browser window should open with the UI directly.
 
 You can edit the sidebar components in `src/routes/+layout.svelte`, and the main page content in `src/routes/+page.svelte`. The following utilities are preinstalled, and their documentation is sure to be helpful:
