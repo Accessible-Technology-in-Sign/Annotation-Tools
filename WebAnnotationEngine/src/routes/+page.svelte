@@ -3,11 +3,12 @@
   import { goto } from '$app/navigation';
 
 
+
   let username = null;
   let isLoggedIn = false;
   let loading = true;
 
-  let batches = {}; 
+  let batches = []; 
   let batchList = [];
   let words = []; 
   let selectedBatch = null;
@@ -24,45 +25,46 @@
     isLoggedIn = !!username;  
     loading = false;
 
-    try {
-      const response = await fetch('/api/batches');
-      if (!response.ok) throw new Error('Failed to load batches');
-      batches = await response.json();
-      batchList = Object.keys(batches); 
-    } catch (error) {
-      console.error('Error loading batches:', error);
-    }
+    const res = await fetch(`/api/batches/${username}`);
+    const data = await res.json();
+    batches = data["batches"]
+    batchList = data ["batchList"]
   });
 
   async function saveUsername() {
     if (username.trim() === "") return;
 
-    const res = await fetch("http://127.0.0.1:5000/check_user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
+    try {
+      const res = await fetch("/api/check_user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.valid) {
-      localStorage.setItem("username", username);
-      isLoggedIn = true;
-    } else {
-      alert("Username not recognized. Please contact an admin.");
+      if (data.valid) {
+        localStorage.setItem("username", username);
+        isLoggedIn = true;
+      } else {
+        alert("Username not recognized. Please contact an admin.");
+      }
+    } catch (error) {
+      console.error("Frontend error:", error);
+      alert("Something went wrong, please try again.");
     }
   }
 
-  function logout() {
-    localStorage.removeItem("username"); 
-    isLoggedIn = false;
-    username = null;
-  }
-
-
-  function selectBatch(batch) {
-    selectedBatch = batch;
-    words = Object.keys(batches[batch]);
+  function selectBatch(batchNumber) {
+      selectedBatch = batchNumber;
+      const batchObj = batches.find(b => b.batch === batchNumber);
+      if (batchObj) {
+          words = batchObj.words;
+          console.log(words);
+      } else {
+          words = [];
+          console.log("Batch not found!");
+      }
   }
 
   function startAnnotating(word) {
@@ -71,6 +73,18 @@
       return;
     }
     goto(`/annotation/${encodeURIComponent(selectedBatch)}/${encodeURIComponent(word)}`);
+  }
+  function logout() {
+    // Remove username from local storage
+    localStorage.removeItem("username"); 
+
+      // Reset state
+      username = null;
+      isLoggedIn = false;
+      selectedBatch = null;
+      words = [];
+      batchList = [];
+      batches = [];
   }
 
 </script>
@@ -186,8 +200,8 @@
 
       <!-- Word List -->
       <div class="word-list">
-        <h3>{selectedBatch ? `${selectedBatch} - Words` : "Words"}</h3>
-        {#if selectedBatch}
+        <h3>{selectedBatch !== null ? `${selectedBatch} - Words` : "Words"}</h3>
+        {#if selectedBatch !== null}
           {#each words as word}
             <div class="word-item" on:click={() => startAnnotating(word)}>
               {word}

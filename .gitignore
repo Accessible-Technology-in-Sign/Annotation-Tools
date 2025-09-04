@@ -28,7 +28,9 @@ WebAnnotationEngine/static/ReferenceVideos/
 # Config files
 WebAnnotationEngine/src/routes/config/videoConfig.json
 WebAnnotationEngine/src/routes/config/sign_list.txt
+flask_app/config.py
 
 
 __pycache__/
 annot_venv/
+flask_app/config.py

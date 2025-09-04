@@ -1,28 +1,36 @@
 export async function load({ params, fetch }) {
   const { batch, word } = params;
 
-  const response = await fetch('/api/batches');
+  console.log(batch);
+  console.log(word);
 
-  if (!response.ok) {
-    console.error('Failed to fetch batches');
-    throw new Error('Failed to load batch data');
+  let videoList;
+
+  try {
+    const res = await fetch("/api/batches/word/videos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ batch_number: batch, word })
+    });
+
+    const data = await res.json();
+    videoList = data.videos;
+    console.log(videoList);
+  } catch (error) {
+    console.error("Load error:", error);
   }
 
-  const batches = await response.json();
-
-  const selectedBatch = batches[batch];
-  if (!selectedBatch) {
+  if (!batch) {
     throw new Error(`Batch "${batch}" not found`);
   }
 
-  const selectedVideoData = selectedBatch[word];
-  if (!selectedVideoData) {
+  if (!videoList) {
     throw new Error(`Word "${word}" not found in batch "${batch}"`);
   }
 
   return {
     batch,
     word,
-    selectedVideoData,
+    videoList
   };
 }

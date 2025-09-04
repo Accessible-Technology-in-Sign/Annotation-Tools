@@ -1,15 +1,46 @@
 <script>
-  // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
+  // Accessing the `data` prop containing word and videoList from `+page.js`
   export let data;
   import { Pane, Splitpanes } from 'svelte-splitpanes';
+  import { onMount } from 'svelte';
   import {writable} from "svelte/store"
 
   export const userAnnot = writable({})
 
-  const { batch, word, selectedVideoData } = data;
+  const { batch, word, videoList } = data;
 
-  let username = localStorage.getItem("username");
+  let username = null;
+  let selectedVideo = null;
+  let currReferenceVideo = 0;
+  let currReviewVideo = 0;
 
+  onMount(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) username = storedUsername;
+    console.log(videoList)
+    selectVideo(videoList[currReviewVideo])
+  });
+
+  async function selectVideo(videoName) {
+    try {
+      const res = await fetch("/api/batches/word/video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ video_title: videoName })
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(error.error || "Video fetch failed");
+        return;
+      }
+
+      const blob = await res.blob();
+      selectedVideo = URL.createObjectURL(blob);
+    } catch (err) {
+      console.error("error:" + err);
+    }
+  }
 
   import { goto } from '$app/navigation';
 
@@ -25,9 +56,6 @@
   let label = null;
 
   let comments = "";
-
-  let currReferenceVideo = 0;
-  let currReviewVideo = 0;
 
   let refVisible = true;
 
@@ -65,33 +93,34 @@
   }
 
   async function addAnnot(annot_label, annot_comments, annot_user) {
-    
-    if (annot_label !== savedLabel || annot_comments!== savedComments) {
-      userAnnot.update(store => ({
-        ...store,
-        [currReviewVideo]: {annot_label, annot_comments}
-      }));
+  if (annot_label !== savedLabel || annot_comments !== savedComments) {
+    userAnnot.update(store => ({
+      ...store,
+      [currReviewVideo]: { annot_label, annot_comments }
+    }));
 
-      const response = await fetch("http://127.0.0.1:5000/add_annot", {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            label: annot_label,
-            sign: word,
-            user: annot_user,
-            comments: annot_comments,
-            time: Date.now(),
-            video_path: selectedVideoData.reviews[currReviewVideo]
-          })
+    try {
+      const response = await fetch("/api/add_annot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: annot_label,
+          sign: word,
+          user: annot_user,
+          comments: annot_comments,
+          time: Date.now(),
+          video_path: videoList[currReviewVideo]
+        })
       });
+
       const data = await response.json();
       console.log(data.message);
-
+    } catch (err) {
+      console.error("Error adding annotation:", err);
     }
-
+  }
 }
+
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
   function onKeyPress(event) {
@@ -150,6 +179,7 @@
   function prevVideo() {
     if (currReviewVideo > 0) {
       currReviewVideo--;
+      selectVideo(videoList[currReviewVideo])
     }
   }
 
@@ -165,9 +195,10 @@
     
     addAnnot(label, comments, username);
 
-    if (currReviewVideo < selectedVideoData.reviews.length - 1) {
+    if (currReviewVideo < videoList.length - 1) {
       currReviewVideo++;
       const videoElement = document.getElementById('review-video');
+      selectVideo(videoList[currReviewVideo])
       if (videoElement) {
           videoElement.play();
       }
@@ -225,7 +256,7 @@
 
 <svelte:window on:keypress={onKeyPress} />
 
-{#if selectedVideoData}
+{#if videoList}
     <div class="flex flex-col h-screen">
       <!-- header -->
       <div class="shring-0 px-4 py-2 flex justify-between items-center">
@@ -244,7 +275,7 @@
           <Pane minSize={20} maxSize={63}>
             <!-- Video to review -->
             <video id="review-video" class="w-full h-full" 
-                src={`${selectedVideoData.reviews[currReviewVideo]}`}
+                src={selectedVideo}
                 loop={reviewVideoLooped}   
                 autoplay
                 bind:paused={reviewVideoPaused}
@@ -254,9 +285,9 @@
             <Pane>
               <Splitpanes horizontal={true}>
                 <Pane minSize={15} maxSize={80}>
-                  <!-- Reference video -->
+                  <!--Reference video-->
                   <video class="w-full h-full"
-                      src={`${selectedVideoData.reference}`}
+                      src={selectedVideo}
                       loop={referenceVideoLooped}
                       autoplay
                       bind:paused={referenceVideoPaused}
