@@ -1,53 +1,70 @@
 <script>
-  import { onMount } from 'svelte';
-  import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
+    import { onMount } from 'svelte';
+    import { page } from '$app/stores';
+    import { goto } from '$app/navigation';
 
-  const API_BASE = 'http://127.0.0.1:5000';
-  const username = (localStorage.getItem('username') || '').trim();
+    const API_BASE = 'http://127.0.0.1:5000';
+    const username = (localStorage.getItem('username') || '').trim();
 
-  let items = [];
-  let loading = true;
-  let error = null;
+    let items = [];
+    let loading = true;
+    let error = null;
 
-  $: params = $page.params;
+    $: params = $page.params;
 
-  function basename(p) { return (p || '').split('/').pop(); }
-
-  onMount(async () => {
-    try {
-      const url = new URL(`${API_BASE}/annots`);
-      url.searchParams.set('user', username);
-      url.searchParams.set('sign', params.word);
-
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const saved = await r.json(); 
-
-      items = Object.entries(saved)
-        .map(([full, v]) => ({ full, video: basename(full), label: v.label, time: v.time }))
-        .sort((a, b) => a.video.localeCompare(b.video));
-    } catch (e) {
-      error = String(e);
-    } finally {
-      loading = false;
+    function basename(p) {
+        return (p || '').split('/').pop();
     }
-  });
-  
-  function reReview(item) {
-    // item.full is the server path we got from /annots
-    const q = new URLSearchParams({ video: item.full });
-    goto(`/annotation/${params.batch}/${params.word}?${q.toString()}`);
-  }
 
-  function labelMeta(l) {
-    const base = "inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-sm font-medium shrink-0";
-    if (l === "Good")           return { cls: `${base} bg-green-200`,  icon: "/thumbs-up.svg" };
-    if (l === "Variant")        return { cls: `${base} bg-yellow-200`, icon: "/variant.svg" };
-    if (l === "Bad")            return { cls: `${base} bg-red-200`,    icon: "/thumbs-down.svg" };
-    if (l === "Further Review") return { cls: `${base} bg-blue-200`,   icon: "/archive.svg" };
-    return { cls: `${base} bg-gray-200`, icon: "" };
-  }
+    onMount(async () => {
+        try {
+            const annUrl = new URL(`${API_BASE}/annots`);
+            annUrl.searchParams.set('user', username);
+            annUrl.searchParams.set('sign', params.word);
+            const annRes = await fetch(annUrl);
+            if (!annRes.ok) throw new Error(`HTTP ${annRes.status} (annots)`);
+            const saved = await annRes.json(); 
+
+            const batchesRes = await fetch(`${API_BASE}/api/batches`);
+            if (!batchesRes.ok) throw new Error(`HTTP ${batchesRes.status} (batches)`);
+            const batches = await batchesRes.json();
+
+            const entry = batches?.[params.batch]?.[params.word];
+            const reviews = entry?.reviews || [];
+
+            items = reviews.map(full => {
+                const base = basename(full);
+                const a = saved[base];
+                return {
+                    full,
+                    video: base,
+                    label: (a && a.label && String(a.label).trim()) ? a.label : 'Unlabeled',
+                    time: a?.time ?? null
+                };
+            });
+
+            items.sort((a, b) => a.video.localeCompare(b.video));
+        } catch (e) {
+            error = String(e);
+        } finally {
+            loading = false;
+        }
+    });
+
+    function review(item) {
+        const q = new URLSearchParams({ video: item.full });
+        goto(`/annotation/${params.batch}/${params.word}?${q.toString()}`);
+    }
+
+    function labelMeta(l) {
+        const base = "inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-sm font-medium shrink-0";
+        if (l === "Good")           return { cls: `${base} bg-green-200`,  icon: "/thumbs-up.svg" };
+        if (l === "Variant")        return { cls: `${base} bg-yellow-200`, icon: "/variant.svg" };
+        if (l === "Bad")            return { cls: `${base} bg-red-200`,    icon: "/thumbs-down.svg" };
+        if (l === "Further Review") return { cls: `${base} bg-blue-200`,   icon: "/archive.svg" };
+        if (l === "Unlabeled")      return { cls: `${base} bg-gray-200`,   icon: "" };   // NEW
+        return { cls: `${base} bg-gray-200`, icon: "" };
+    }
 </script>
 
 {#if loading}
@@ -75,8 +92,8 @@
             </span>
 
             <button class="shrink-0 px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
-                    on:click={() => reReview(it)}>
-            Re-review
+                    on:click={() => review(it)}>
+            Review
             </button>
         </div>
         {/each}
