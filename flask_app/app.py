@@ -8,6 +8,7 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.exc import IntegrityError
 from videos import videos_bp
 from batches import batches_bp
+from models import Annot
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}})
@@ -53,6 +54,60 @@ def add_annot():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Failed to add annotation"}), 500
+
+@app.get("/annots")
+def get_annots():
+    data = request.args
+
+    u = (data.get("username") or data.get("user") or "").strip()
+    sign = (data.get("sign") or "").strip()
+    if not u or not sign:
+        return jsonify({"error": "user and sign required"}), 400
+
+    fmt = (data.get("format") or "").strip().lower()
+    batch_param = (data.get("batch") or "").strip()
+    want_counts = (data.get("counts") or "").strip() in ("1", "true", "yes")
+
+    q = db.session.query(Annot).filter_by(user=u, sign=sign)
+    if batch_param:
+        q = q.filter(Annot.batch == batch_param)
+
+    q = q.order_by(Annot.video_path.asc(), Annot.time.asc())
+    rows = q.all()
+
+    latest = {}
+    for r in rows:
+        latest[r.video_path] = r
+
+    if fmt != "summary":
+        out = {
+            vp: {
+                "label": r.label,
+                "comments": r.comments or "",
+                "time": r.time.isoformat() if r.time else None,
+            }
+            for vp, r in latest.items()
+        }
+        return jsonify(out)
+
+    items = [
+        {
+            "video": vp,
+            "label": r.label,
+            "time": r.time.isoformat() if r.time else None,
+        }
+        for vp, r in latest.items()
+    ]
+    items.sort(key=lambda x: x["video"])
+
+    resp = {"items": items}
+    if want_counts:
+        counts = {}
+        for it in items:
+            counts[it["label"]] = counts.get(it["label"], 0) + 1
+        resp["counts"] = counts
+
+    return jsonify(resp)
     
 @app.route('/check_user', methods=['POST'])
 def check_user():
