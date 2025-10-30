@@ -116,6 +116,17 @@
       });
       const data = await res.json();
       if (!res.ok) console.warn("Save failed:", data?.error || res.statusText);
+      
+      // Save last activity to localStorage for resume feature
+      if (res.ok) {
+        const lastActivity = {
+          batch: batch,
+          word: word,
+          timestamp: new Date().toISOString(),
+          video: basename(selectedVideoData.reviews[currReviewVideo])
+        };
+        localStorage.setItem(`lastActivity:${username}`, JSON.stringify(lastActivity));
+      }
     } catch (e) {
       console.error("Save error:", e);
     }
