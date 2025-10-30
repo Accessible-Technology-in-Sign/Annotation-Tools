@@ -294,21 +294,6 @@
 								<div class="resume-batch-word">
 									Batch: {lastActivity.batch} • Word: {lastActivity.word}
 								</div>
-								<div class="resume-time">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="14"
-										height="14"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-									>
-										<circle cx="12" cy="12" r="10"></circle>
-										<polyline points="12 6 12 12 16 14"></polyline>
-									</svg>
-									Last active {formatTimeAgo(lastActivity.timestamp)}
-								</div>
 							</div>
 							<div class="resume-actions">
 								<button class="btn-resume" on:click={resumeAnnotation}>Resume</button>
@@ -524,15 +509,6 @@
 	.resume-batch-word {
 		font-size: 1rem;
 		color: #1f2937;
-		margin-bottom: 0.25rem;
-	}
-
-	.resume-time {
-		font-size: 1rem;
-		color: #6b7280;
-		display: flex;
-		align-items: center;
-		gap: 5px;
 	}
 
 	.resume-actions {

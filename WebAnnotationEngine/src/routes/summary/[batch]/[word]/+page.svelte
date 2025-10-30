@@ -43,7 +43,6 @@
                 };
             });
 
-            items.sort((a, b) => a.video.localeCompare(b.video));
         } catch (e) {
             error = String(e);
         } finally {
