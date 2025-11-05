@@ -1,6 +1,6 @@
 <script>
-  // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
   export let data;
+  import { browser } from '$app/environment';
   import { onMount } from 'svelte';
   import { Pane, Splitpanes } from 'svelte-splitpanes';
   import {writable} from "svelte/store";
@@ -10,7 +10,6 @@
   export const userAnnot = writable({})
 
   const { batch, word, selectedVideoData } = data;
-
   const API_BASE = "http://127.0.0.1:5000";
   const basename = (p) => (p || "").split("/").pop();
   const username = (localStorage.getItem("username") || "").trim();
@@ -24,14 +23,8 @@
 
     const url = $page.url; // SvelteKit store value
     const qVideo = url.searchParams.get('video');
-    const qIdx   = url.searchParams.get('idx');
 
-    if (qIdx !== null) {
-      const i = Number(qIdx);
-      if (!Number.isNaN(i) && i >= 0 && i < (selectedVideoData?.reviews?.length ?? 0)) {
-        currReviewVideo = i;
-      }
-    } else if (qVideo) {
+    if (qVideo) {
       const i = selectedVideoData.reviews.findIndex(p =>
         p === qVideo || basename(p) === basename(qVideo)
       );
@@ -51,35 +44,75 @@
       }
     });
     userAnnot.set(next);
-
-    // Pre-fill current video’s fields if present
-    const cur = saved[basename(selectedVideoData.reviews[currReviewVideo])];
-    if (cur) {
-      label = cur.label;
-      comments = cur.comments || "";
-    }
   });
 
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
   let revPlaybackRate = 1;
+  let refVisible = true;
 
   let referenceVideoPaused = true;
   let referenceVideoLooped = true;
   let refPlaybackRate = 1;
 
-  // @ts-ignore 
   let label = null;
-
   let comments = "";
 
   let currReviewVideo = 0;
 
-  let refVisible = true;
+  let videoEl;
+  let duration = 0;
+  let clipStart = 0;
+  let clipEnd;
+  
+   onMount(() => {
+     if (!browser) return;
+     const setMeta = () => {
+       if (!videoEl) return;
+       const d = Number.isFinite(videoEl.duration) ? videoEl.duration : 0;
+       if (d > 0) {
+         duration = d;
+         if (clipEnd == null || typeof clipEnd !== 'number' || clipEnd <= 0) {
+           clipEnd = duration;
+         } else {
+           clipEnd = Math.min(clipEnd, duration);
+         }
+         if (clipStart == null) clipStart = 0;
+       }
+     };
+     if (videoEl) {
+       videoEl.addEventListener('loadedmetadata', setMeta);
+       setMeta();
+     }
+   });
+   
+   function onTimeUpdate() {
+     if (!videoEl) return;
+    clipStart = Math.max(0, Math.min(Number(clipStart) || 0, duration || clipStart));
+    clipEnd = Math.max(clipStart, Math.min(Number(clipEnd) || clipStart, duration || clipEnd));
 
-  function revPlayPause() {
-    reviewVideoPaused = !reviewVideoPaused;
-  }
+    if (videoEl.currentTime >= clipEnd - 0.05) {
+      if (reviewVideoLooped) {
+        videoEl.currentTime = clipStart;
+      } else {
+        videoEl.pause();
+        reviewVideoPaused = true;
+      }
+    }
+   }
+   
+   function revPlayPause() {
+    if (reviewVideoPaused) {
+      clipStart = Math.max(0, Math.min(Number(clipStart) || 0, duration || clipStart));
+      clipEnd = Math.max(clipStart, Math.min(Number(clipEnd) || clipStart, duration || clipEnd));
+      if (videoEl && (videoEl.currentTime < clipStart || videoEl.currentTime > clipEnd)) {
+        videoEl.currentTime = clipStart;
+      }
+      reviewVideoPaused = false;
+    } else {
+      reviewVideoPaused = true;
+    }
+   }
 
   function revToggleLoop() {
     reviewVideoLooped = !reviewVideoLooped;
@@ -191,30 +224,22 @@
     if (currReviewVideo > 0) {
       currReviewVideo--;
       updateUrlForCurrentVideo();
+      clipStart = 0;
+      clipEnd = undefined;
+      try { videoEl?.load(); } catch (e) {}
     }
-  }
-
-  function resetState(){
-    // reviewVideoPaused = true;
-    // referenceVideoPaused = true;
-
-    label = null;
-    comments = "";
   }
 
   function nextVideo() {
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
       updateUrlForCurrentVideo();
-      const videoElement = document.getElementById('review-video');
-      if (videoElement) {
-          videoElement.play();
-      }
+      clipStart = 0;
+      clipEnd = undefined;
+      try { videoEl?.load(); } catch (e) {}
     }  else {
       viewSummary();
     }
-
-    resetState();
 
     const videoElement = document.getElementById('review-video');
     if (videoElement) {
@@ -322,12 +347,32 @@
         <Splitpanes class="h-full w-full">
           <Pane minSize={20} maxSize={63}>
             <!-- Video to review -->
-            <video id="review-video" class="w-full h-full" 
-                src={toFlask(selectedVideoData.reviews[currReviewVideo])}
-                loop={reviewVideoLooped}   
-                autoplay
-                bind:paused={reviewVideoPaused}
-                bind:playbackRate={revPlaybackRate} />
+            <div class="flex flex-col h-full">
+              <video id="review-video" class="w-full h-full flex-1"
+                  bind:this={videoEl}
+                  src={toFlask(selectedVideoData.reviews[currReviewVideo])}
+                  loop={reviewVideoLooped}
+                  autoplay
+                  on:timeupdate={onTimeUpdate}
+                  bind:paused={reviewVideoPaused}
+                  bind:playbackRate={revPlaybackRate} />
+
+              <!-- Clip controls: numeric fields + sliders + Play button -->
+              <div class="p-2 flex flex-wrap items-center gap-2 bg-white">
+                <label class="text-sm">Start:
+                  <input type="number" min="0" step="0.1" bind:value={clipStart} class="ml-1 w-20" />
+                </label>
+                <label class="text-sm">End:
+                  <input type="number" min="0" step="0.1" bind:value={clipEnd} class="ml-1 w-20" />
+                </label>
+                <!-- Play Clip removed: playback always follows sliders -->
+                <div class="flex-1 min-w-[200px]">
+                  <input type="range" min="0" max={duration || 60} step="0.1" bind:value={clipStart} class="w-full" />
+                  <input type="range" min="0" max={duration || 60} step="0.1" bind:value={clipEnd} class="w-full mt-1" />
+                </div>
+                <div class="text-sm ml-2">Duration: {duration ? duration.toFixed(1) + 's' : '—'}</div>
+              </div>
+            </div>
           </Pane>
           {#if refVisible}
             <Pane>

@@ -20,7 +20,6 @@
 	let userToken = 0;
 
 	// Resume modal state
-	let showResumeModal = false;
 	let lastActivity = null;
 
 	// ---------- PROGRESS HELPERS ----------
@@ -136,20 +135,6 @@
 		}
 	}
 
-	function formatTimeAgo(timestamp) {
-		const now = Date.now();
-		const then = new Date(timestamp).getTime();
-		const diffMs = now - then;
-		const diffMins = Math.floor(diffMs / 60000);
-		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
-
-		if (diffMins < 1) return 'just now';
-		if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-		if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-		return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-	}
-
 	// ---------- LIFECYCLE ----------
 
 	onMount(async () => {
@@ -247,121 +232,6 @@
 		goto(`/annotation/${encodeURIComponent(selectedBatch)}/${encodeURIComponent(word)}`);
 	}
 </script>
-
-<!-- Login Section -->
-{#if loading}
-	<div class="fixed inset-0 flex items-center justify-center bg-white">
-		<h2 class="text-2xl font-bold">Loading...</h2>
-	</div>
-{:else}
-	{#if !isLoggedIn}
-		<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-			<div class="bg-white p-6 rounded shadow-lg">
-				<h2 class="text-lg">Enter your name to start annotating:</h2>
-				<input
-					type="text"
-					bind:value={username}
-					class="border p-2 rounded w-full"
-					placeholder="Enter your name..."
-					on:keypress={(event) => event.key === 'Enter' && saveUsername()}
-				/>
-				<button on:click={saveUsername} class="mt-4 bg-blue-500 text-white p-2 rounded w-full">
-					Start
-				</button>
-			</div>
-		</div>
-	{/if}
-
-	{#if isLoggedIn}
-		<div class="page-wrapper">
-			<!-- Header -->
-			<div class="header">
-				<h1 class="title">ASL Annotation</h1>
-				<div class="user-info">
-					<span>Hello, {username}</span>
-					<button on:click={logout} class="logout-button">Log Out</button>
-				</div>
-			</div>
-
-			<!-- Content -->
-			<div class="content-wrapper">
-				<!-- Resume Section -->
-				{#if lastActivity}
-					<div class="resume-section">
-						<div class="resume-header">Resume Where You Left Off</div>
-						<div class="resume-details">
-							<div class="resume-info">
-								<div class="resume-batch-word">
-									Batch: {lastActivity.batch} • Word: {lastActivity.word}
-								</div>
-							</div>
-							<div class="resume-actions">
-								<button class="btn-resume" on:click={resumeAnnotation}>Resume</button>
-								<button
-									class="btn-details"
-									on:click={() =>
-										goto(
-											`/summary/${encodeURIComponent(lastActivity.batch)}/${encodeURIComponent(lastActivity.word)}`
-										)}>View Details</button
-								>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Batches and Words Grid -->
-				<div class="two-col">
-					<!-- Batch List -->
-					<div class="batch-list">
-						<h3>Batches</h3>
-						{#each batchList as b}
-							<div class="batch-item" on:click={() => selectBatch(b)}>
-								<div class="flex items-center justify-between">
-									<div>{b}</div>
-									<div class="meta">
-										{#if batchProgress[b]}
-											{batchProgress[b].done}/{batchProgress[b].total} • {batchProgress[b].percent}%
-										{:else}
-											loading…
-										{/if}
-									</div>
-								</div>
-								<div class="bar-bg mt-2">
-									<div class="bar-fill" style="width: {batchProgress[b]?.percent ?? 0}%"></div>
-								</div>
-							</div>
-						{/each}
-					</div>
-
-					<!-- Word List -->
-					<div class="word-list">
-						<h3>{selectedBatch ? `${selectedBatch} - Words` : 'Words'}</h3>
-						{#if selectedBatch}
-							{#each words as word}
-								<div class="word-item" on:click={() => startAnnotating(word)}>
-									<div class="flex items-center justify-between">
-										<div>{word}</div>
-										<div class="meta">
-											{#if wordProgress[word]}
-												{wordProgress[word].done}/{wordProgress[word].total} • {wordProgress[word]
-													.percent}%
-											{:else}
-												loading…
-											{/if}
-										</div>
-									</div>
-									<div class="bar-bg mt-2">
-										<div class="bar-fill" style="width: {wordProgress[word]?.percent ?? 0}%"></div>
-									</div>
-								</div>
-							{/each}
-						{/if}
-					</div>
-				</div>
-			</div>
-		</div>
-	{/if}
-{/if}
 
 <style>
 	.page-wrapper {
@@ -547,3 +417,119 @@
 		background: #f9fafb;
 	}
 </style>
+
+<!-- Login Section -->
+{#if loading}
+	<div class="fixed inset-0 flex items-center justify-center bg-white">
+		<h2 class="text-2xl font-bold">Loading...</h2>
+	</div>
+{:else}
+	{#if !isLoggedIn}
+		<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+			<div class="bg-white p-6 rounded shadow-lg">
+				<h2 class="text-lg">Enter your name to start annotating:</h2>
+				<input
+					type="text"
+					bind:value={username}
+					class="border p-2 rounded w-full"
+					placeholder="Enter your name..."
+					on:keypress={(event) => event.key === 'Enter' && saveUsername()}
+				/>
+				<button on:click={saveUsername} class="mt-4 bg-blue-500 text-white p-2 rounded w-full">
+					Start
+				</button>
+			</div>
+		</div>
+	{/if}
+
+	{#if isLoggedIn}
+		<div class="page-wrapper">
+			<!-- Header -->
+			<div class="header">
+				<h1 class="title">ASL Annotation</h1>
+				<div class="user-info">
+					<span>Hello, {username}</span>
+					<button on:click={logout} class="logout-button">Log Out</button>
+				</div>
+			</div>
+
+			<!-- Content -->
+			<div class="content-wrapper">
+				<!-- Resume Section -->
+				{#if lastActivity}
+					<div class="resume-section">
+						<div class="resume-header">Resume Where You Left Off</div>
+						<div class="resume-details">
+							<div class="resume-info">
+								<div class="resume-batch-word">
+									Batch: {lastActivity.batch} • Word: {lastActivity.word}
+								</div>
+							</div>
+							<div class="resume-actions">
+								<button class="btn-resume" on:click={resumeAnnotation}>Resume</button>
+								<button
+									class="btn-details"
+									on:click={() =>
+										goto(
+											`/summary/${encodeURIComponent(lastActivity.batch)}/${encodeURIComponent(lastActivity.word)}`
+										)}>View Details</button
+								>
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Batches and Words Grid -->
+				<div class="two-col">
+					<!-- Batch List -->
+					<div class="batch-list">
+						<h3>Batches</h3>
+						{#each batchList as b}
+							<div class="batch-item" on:click={() => selectBatch(b)}>
+								<div class="flex items-center justify-between">
+									<div>{b}</div>
+									<div class="meta">
+										{#if batchProgress[b]}
+											{batchProgress[b].done}/{batchProgress[b].total} • {batchProgress[b].percent}%
+										{:else}
+											loading…
+										{/if}
+									</div>
+								</div>
+								<div class="bar-bg mt-2">
+									<div class="bar-fill" style="width: {batchProgress[b]?.percent ?? 0}%"></div>
+								</div>
+							</div>
+						{/each}
+					</div>
+
+					<!-- Word List -->
+					<div class="word-list">
+						<h3>{selectedBatch ? `${selectedBatch} - Words` : 'Words'}</h3>
+						{#if selectedBatch}
+							{#each words as word}
+								<div class="word-item" on:click={() => startAnnotating(word)}>
+									<div class="flex items-center justify-between">
+										<div>{word}</div>
+										<div class="meta">
+											{#if wordProgress[word]}
+												{wordProgress[word].done}/{wordProgress[word].total} • {wordProgress[word]
+													.percent}%
+											{:else}
+												loading…
+											{/if}
+										</div>
+									</div>
+									<div class="bar-bg mt-2">
+										<div class="bar-fill" style="width: {wordProgress[word]?.percent ?? 0}%"></div>
+									</div>
+								</div>
+							{/each}
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+{/if}
+
