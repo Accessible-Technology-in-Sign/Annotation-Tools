@@ -1,17 +1,64 @@
 <script>
   // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
   export let data;
+  import { onMount } from 'svelte';
   import { Pane, Splitpanes } from 'svelte-splitpanes';
-  import {writable} from "svelte/store"
+  import {writable} from "svelte/store";
+  import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
 
   export const userAnnot = writable({})
 
   const { batch, word, selectedVideoData } = data;
 
-  let username = localStorage.getItem("username");
+  const API_BASE = "http://127.0.0.1:5000";
+  const basename = (p) => (p || "").split("/").pop();
+  const username = (localStorage.getItem("username") || "").trim();
+  const toFlask = (p) => {
+    const clean = p.replace(/^\/?/, "");
+    return `${API_BASE}/${encodeURI(clean)}`;
+  };
 
+  onMount(async () => {
+    if (!username || !selectedVideoData?.reviews?.length) return;
 
-  import { goto } from '$app/navigation';
+    const url = $page.url; // SvelteKit store value
+    const qVideo = url.searchParams.get('video');
+    const qIdx   = url.searchParams.get('idx');
+
+    if (qIdx !== null) {
+      const i = Number(qIdx);
+      if (!Number.isNaN(i) && i >= 0 && i < (selectedVideoData?.reviews?.length ?? 0)) {
+        currReviewVideo = i;
+      }
+    } else if (qVideo) {
+      const i = selectedVideoData.reviews.findIndex(p =>
+        p === qVideo || basename(p) === basename(qVideo)
+      );
+      if (i >= 0) currReviewVideo = i;
+    }
+
+    const res = await fetch(
+      `${API_BASE}/annots?user=${encodeURIComponent(username)}&sign=${encodeURIComponent(word)}`
+    );
+    if (!res.ok) return;
+    const saved = await res.json(); 
+    const next = {};
+    selectedVideoData.reviews.forEach((p, idx) => {
+      const a = saved[basename(p)];
+      if (a && a.label) {
+        next[idx] = { annot_label: a.label, annot_comments: a.comments || "" };
+      }
+    });
+    userAnnot.set(next);
+
+    // Pre-fill current video’s fields if present
+    const cur = saved[basename(selectedVideoData.reviews[currReviewVideo])];
+    if (cur) {
+      label = cur.label;
+      comments = cur.comments || "";
+    }
+  });
 
   let reviewVideoPaused = true;
   let reviewVideoLooped = true;
@@ -26,7 +73,6 @@
 
   let comments = "";
 
-  let currReferenceVideo = 0;
   let currReviewVideo = 0;
 
   let refVisible = true;
@@ -47,51 +93,44 @@
     revPlaybackRate = Math.min(2, revPlaybackRate + 0.25);
   }
 
-  let savedLabel = null;
-  let savedComments = "";
-  $: {
-    userAnnot.subscribe(store => {
-      if (store[currReviewVideo]) {
-        savedLabel = store[currReviewVideo].annot_label;
-        savedComments = store[currReviewVideo].annot_comments;
-      } else {
-        savedLabel = null;
-        savedComments = "";
-      }
-    });
-
-    label = savedLabel;
-    comments = savedComments;
-  }
+  $: current = $userAnnot[currReviewVideo] ?? { annot_label: null, annot_comments: "" };
+  $: label = current.annot_label ?? null;
 
   async function addAnnot(annot_label, annot_comments, annot_user) {
-    
-    if (annot_label !== savedLabel || annot_comments!== savedComments) {
-      userAnnot.update(store => ({
-        ...store,
-        [currReviewVideo]: {annot_label, annot_comments}
-      }));
+    if (!annot_label || String(annot_label).trim() === "") return;
 
-      const response = await fetch("http://127.0.0.1:5000/add_annot", {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            label: annot_label,
-            sign: word,
-            user: annot_user,
-            comments: annot_comments,
-            time: Date.now(),
-            video_path: selectedVideoData.reviews[currReviewVideo]
-          })
+    const payload = {
+      label: annot_label,
+      sign: word,
+      user: annot_user,
+      comments: annot_comments ?? "",
+      time: Date.now(),
+      video_path: selectedVideoData.reviews[currReviewVideo],
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/add_annot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      const data = await response.json();
-      console.log(data.message);
-
+      const data = await res.json();
+      if (!res.ok) console.warn("Save failed:", data?.error || res.statusText);
+      
+      // Save last activity to localStorage for resume feature
+      if (res.ok) {
+        const lastActivity = {
+          batch: batch,
+          word: word,
+          timestamp: new Date().toISOString(),
+          video: basename(selectedVideoData.reviews[currReviewVideo])
+        };
+        localStorage.setItem(`lastActivity:${username}`, JSON.stringify(lastActivity));
+      }
+    } catch (e) {
+      console.error("Save error:", e);
     }
-
-}
+  }
 
   // Handle key press events for keybinds (e.g., play/pause, approve/reject, etc.)
   function onKeyPress(event) {
@@ -138,18 +177,20 @@
 
 
   function setLabel(newLabel) {
-    const annotation = {
-      user: username,
-      word,
-      batch,
-      label: newLabel,
-    };
     label = newLabel;
+
+      userAnnot.update(s => ({
+        ...s,
+        [currReviewVideo]: { annot_label: newLabel, annot_comments: comments ?? "" }
+      }));
+
+      addAnnot(newLabel, comments ?? "", username);
   }
 
   function prevVideo() {
     if (currReviewVideo > 0) {
       currReviewVideo--;
+      updateUrlForCurrentVideo();
     }
   }
 
@@ -162,19 +203,15 @@
   }
 
   function nextVideo() {
-    
-    addAnnot(label, comments, username);
-
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
+      updateUrlForCurrentVideo();
       const videoElement = document.getElementById('review-video');
       if (videoElement) {
           videoElement.play();
       }
     }  else {
-      if (confirm("You've reached the last video. Return to the selection page?")) {
-        goto('/');
-      }
+      viewSummary();
     }
 
     resetState();
@@ -205,6 +242,24 @@
   function toggleRefVisibility() {
     refVisible = !refVisible;
   }
+
+  function viewSummary() {
+    goto(`/summary/${batch}/${word}`);
+  }
+
+  function updateUrlForCurrentVideo() {
+    const full = selectedVideoData.reviews[currReviewVideo];
+    const q = new URLSearchParams({ video: full });
+    goto(`/annotation/${batch}/${word}?${q.toString()}`, {
+      replaceState: true, keepfocus: true, noscroll: true
+    });
+  }
+
+  $: total = selectedVideoData?.reviews?.length ?? 0;
+  $: completed = Object.values($userAnnot)
+    .filter(v => v && typeof v.annot_label === "string" && v.annot_label.trim() !== "")
+    .length;
+  $: percent = total ? Math.round((completed / total) * 100) : 0;
 </script>
 
 <style>
@@ -228,13 +283,37 @@
 {#if selectedVideoData}
     <div class="flex flex-col h-screen">
       <!-- header -->
-      <div class="shring-0 px-4 py-2 flex justify-between items-center">
+      <div class="shrink-0 px-4 py-2 flex justify-between items-center">
         <h1 class="text-3xl">Annotating: {word}</h1>
         <h2 class="text-md text-center">Annotating batch: {batch}, word: {word}</h2>
         <div>
           <button on:click={toggleRefVisibility} class="visibility-button">
             {refVisible ? 'Hide Reference Video' : 'Show Reference Video'}
           </button>
+          <button on:click={viewSummary} class="visibility-button" style="margin-left: 8px;">
+            View Summary
+          </button>
+        </div>
+      </div>
+
+      <div class="px-4 pb-2">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-sm text-gray-700">
+            {completed}/{total} • {percent}% complete
+          </div>
+          <div class="text-sm text-gray-500">
+            Video {currReviewVideo + 1} of {total}
+          </div>
+        </div>
+        <div class="w-full h-3 bg-gray-200 rounded">
+          <div
+            class="h-3 rounded bg-blue-500 transition-all"
+            style="width: {percent}%;"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow={percent}
+            role="progressbar"
+          />
         </div>
       </div>
 
@@ -244,7 +323,7 @@
           <Pane minSize={20} maxSize={63}>
             <!-- Video to review -->
             <video id="review-video" class="w-full h-full" 
-                src={`${selectedVideoData.reviews[currReviewVideo]}`}
+                src={toFlask(selectedVideoData.reviews[currReviewVideo])}
                 loop={reviewVideoLooped}   
                 autoplay
                 bind:paused={reviewVideoPaused}
@@ -256,7 +335,7 @@
                 <Pane minSize={15} maxSize={80}>
                   <!-- Reference video -->
                   <video class="w-full h-full"
-                      src={`${selectedVideoData.reference}`}
+                      src={toFlask(selectedVideoData.reference)}
                       loop={referenceVideoLooped}
                       autoplay
                       bind:paused={referenceVideoPaused}
@@ -265,7 +344,14 @@
                 <Pane>
                   <!-- Comment panel -->
                   <div class="w-full h-full bg-aquamarine p-0">
-                    <textarea bind:value={comments}
+                    <textarea
+                      bind:value={comments}
+                      on:blur={() => { if (label) addAnnot(label, comments ?? "", username); }}
+                      on:keydown={(e) => {
+                        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && label) {
+                          addAnnot(label, comments ?? "", username);
+                        }
+                      }}
                       class="w-full h-full p-10 text-left align-top resize-none outline-none bg-transparent text-black text-mn"
                       placeholder="Add any comments here..."
                     ></textarea>

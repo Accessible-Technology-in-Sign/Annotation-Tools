@@ -30,5 +30,5 @@ WebAnnotationEngine/src/routes/config/videoConfig.json
 WebAnnotationEngine/src/routes/config/sign_list.txt
 
 
-__pycache__/
+**/__pycache__/
 annot_venv/
