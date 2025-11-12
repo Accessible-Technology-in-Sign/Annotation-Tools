@@ -10,7 +10,7 @@
   export const userAnnot = writable({});
 
   const { batch, word, selectedVideoData } = data;
-  const API_BASE = 'http://127.0.0.1:5000';
+  const API_BASE = 'http://localhost:5000';
   const basename = (p) => (p || '').split('/').pop();
   const username = (localStorage.getItem('username') || '').trim();
   const toFlask = (p) => {
@@ -52,9 +52,11 @@
   let refPlaybackRate = 1;
 
   let label = null;
+  
   let comments = '';
 
   let currReviewVideo = 0;
+  let lastIndex = -1;
 
   let videoEl;
   let duration = 0;
@@ -114,17 +116,23 @@
 
   $: current = $userAnnot[currReviewVideo] ?? { annot_label: null, annot_comments: '' };
   $: label = current.annot_label ?? null;
+  $: if (lastIndex !== currReviewVideo) {
+    comments = ($userAnnot[currReviewVideo]?.annot_comments) ?? '';
+    lastIndex = currReviewVideo;
+  }
 
-  async function addAnnot(annot_label, annot_comments, annot_user) {
-    if (!annot_label || String(annot_label).trim() === '') return;
+  async function addAnnot(label, comments, user, videoPath, startMs, endMs) {
+    if (!label || String(label).trim() === '') return;
 
     const payload = {
-      label: annot_label,
+      label,
       sign: word,
-      user: annot_user,
-      comments: annot_comments || '',
+      user,
+      comments,
       time: Date.now(),
-      video_path: selectedVideoData.reviews[currReviewVideo]
+      video_path: videoPath,
+      timestamp_left_ms: startMs,
+      timestamp_right_ms: endMs
     };
 
     try {
@@ -183,7 +191,10 @@
       [currReviewVideo]: { annot_label: newLabel, annot_comments: comments ?? '' }
     }));
 
-    addAnnot(newLabel, comments ?? '', username);
+   const vp = selectedVideoData.reviews[currReviewVideo];
+   const startMs = Math.round((Number(clipStart) || 0) * 1000);
+   const endMs   = Math.round((Number(clipEnd)   || 0) * 1000);
+   addAnnot(newLabel, comments ?? '', username, vp, startMs, endMs);
   }
 
   function prevVideo() {
@@ -194,13 +205,25 @@
     }
   }
 
-  function nextVideo() {
+  async function nextVideo() {
+    const currentVideoPath = selectedVideoData.reviews[currReviewVideo];
+    const currentLabel = userAnnot[currReviewVideo]?.annot_label ?? null;
+    const currentComments = userAnnot[currReviewVideo]?.annot_comments ?? '';
+    const currentStart = Math.round((Number(clipStart) || 0) * 1000);
+    const currentEnd = Math.round((Number(clipEnd) || 0) * 1000);
+
+    // save using frozen values
+    if (currentLabel) {
+      await addAnnot(currentLabel, currentComments, username, currentVideoPath, currentStart, currentEnd);
+    }
+
     if (currReviewVideo < selectedVideoData.reviews.length - 1) {
       currReviewVideo++;
       updateUrlForCurrentVideo();
       resetClip();
       videoEl?.play();
     } else {
+      // if we're at the last one, go to summary
       goto(`/summary/${batch}/${word}`);
     }
   }
@@ -387,11 +410,19 @@
                   <textarea
                     bind:value={comments}
                     on:blur={() => {
-                      if (label) addAnnot(label, comments ?? '', username);
+                      if (label) {
+                        const vp = selectedVideoData.reviews[currReviewVideo];
+                        const startMs = Math.round((Number(clipStart) || 0) * 1000);
+                        const endMs   = Math.round((Number(clipEnd)   || 0) * 1000);
+                        addAnnot(label, comments ?? '', username, vp, startMs, endMs);
+                      }
                     }}
                     on:keydown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && label) {
-                        addAnnot(label, comments ?? '', username);
+                        const vp = selectedVideoData.reviews[currReviewVideo];
+                        const startMs = Math.round((Number(clipStart) || 0) * 1000);
+                        const endMs   = Math.round((Number(clipEnd)   || 0) * 1000);
+                        addAnnot(label, comments ?? '', username, vp, startMs, endMs);
                       }
                     }}
                     class="w-full h-full p-10 text-left align-top resize-none outline-none bg-transparent text-black text-mn"
