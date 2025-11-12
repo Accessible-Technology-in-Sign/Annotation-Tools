@@ -2,7 +2,7 @@ import os
 
 class DBLogin:
     USER = "root"
-    PSWD = "root"
+    PSWD = "clementine510"
 
 class Config:
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DBLogin.USER}:{DBLogin.PSWD}@localhost/labels"

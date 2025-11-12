@@ -6,6 +6,7 @@ from config import Config, DBLogin
 from datetime import datetime
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import inspect, text
 from videos import videos_bp
 from batches import batches_bp
 from models import Annot
@@ -20,9 +21,20 @@ app.register_blueprint(batches_bp, url_prefix="/api/batches")
 
 db.init_app(app)
 
+def ensure_schema():
+    # add timestamp columns to annots table if they don't exist
+    inspector = inspect(db.engine)
+    columns = [col["name"] for col in inspector.get_columns("annots")]
+
+    with db.engine.begin() as conn:
+        if "timestamp_left_ms" not in columns:
+            conn.execute(text("ALTER TABLE annots ADD COLUMN timestamp_left_ms INT NULL;"))
+        if "timestamp_right_ms" not in columns:
+            conn.execute(text("ALTER TABLE annots ADD COLUMN timestamp_right_ms INT NULL;"))
 
 with app.app_context():
     db.create_all()
+    ensure_schema()
 
 @app.route('/')
 def home():
@@ -39,12 +51,16 @@ def add_annot():
         label=data["label"],
         comments=data.get('comments', ""),
         time=datetime.fromtimestamp(data["time"] / 1000),
-        video_path=os.path.basename(data["video_path"])
+        video_path=os.path.basename(data["video_path"]),
+        timestamp_left_ms=data.get("timestamp_left_ms"),
+        timestamp_right_ms=data.get("timestamp_right_ms")
     ).on_duplicate_key_update(
         sign=data['sign'],
         label=data["label"],
         comments=data.get('comments', ""),
-        time=datetime.fromtimestamp(data["time"] / 1000)
+        time=datetime.fromtimestamp(data["time"] / 1000),
+        timestamp_left_ms=data.get("timestamp_left_ms"),
+        timestamp_right_ms=data.get("timestamp_right_ms")
     )
 
     try:

@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
 
-  const API_BASE = 'http://127.0.0.1:5000';
+  const API_BASE = 'http://localhost:5000';
   const username = (localStorage.getItem('username') || '').trim();
   const basename = (p) => (p || '').split('/').pop();
 

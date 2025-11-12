@@ -13,6 +13,8 @@ class Annot(db.Model):
     time = db.Column(db.TIMESTAMP, default=datetime)
     label = db.Column(db.String(255), nullable=False)
     comments = db.Column(db.Text)
+    timestamp_left_ms = db.Column(db.Integer, nullable=True)
+    timestamp_right_ms = db.Column(db.Integer, nullable=True)
 
 class User(db.Model):
     __tablename__ = "users"
