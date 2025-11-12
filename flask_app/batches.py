@@ -1,6 +1,7 @@
 import os
 import json
 from flask import Blueprint, jsonify, current_app
+from flask_cors import cross_origin
 
 batches_bp = Blueprint("batches", __name__)
 
