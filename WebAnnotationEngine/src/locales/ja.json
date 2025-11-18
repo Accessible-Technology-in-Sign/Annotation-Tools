@@ -1,0 +1,26 @@
+{
+    "loading_user": "読み込み中...",
+    "login": "注釈を開始するには名前を入力してください: ",
+    "login_validity": "ユーザー名が認識されません。管理者に連絡してください。",
+    "login_placeholder": "名前を入力してください...",
+    "start": "開始",
+
+    "title": "日本手話注釈",
+    "greeting": "こんにちは",
+    "log_out": "ログアウト",
+    "batches": "バッチ",
+    "words": "単語",
+
+    "header": "バッチ注釈中",
+    "word": "言葉",
+    "hide_ref": "参考動画を隠す",
+    "show_ref": "参考動画を表示",
+    "comments": "ここにコメントを追加してください...",
+    "label_good": "良い",
+    "label_bad": "悪い",
+    "label_variant": "バリアント",
+    "label_further_review": "再確認が必要",
+    "none": "なし",
+    "last_video": "最後の動画に到達しました。選択画面に戻りますか？",
+    "no_data": "この単語の動画データは利用できません"
+  }
