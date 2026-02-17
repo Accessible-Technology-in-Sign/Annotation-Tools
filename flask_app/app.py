@@ -1,4 +1,5 @@
 import os
+import logging
 import json
 from flask import Flask, send_file, request, jsonify
 from flask_cors import CORS
@@ -11,7 +12,8 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
-load_dotenv() 
+load_dotenv()
+logging.basicConfig(level=logging.DEBUG) 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DBLogin.USER}:{DBLogin.PSWD}@annotation_db:3306/labels'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = Config.SQLALCHEMY_TRACK_MODIFICATIONS
@@ -21,6 +23,12 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+@app.before_request
+def block_trace():
+    # Block unsupported HTTP methods like TRACE
+    if request.method == 'TRACE':
+        abort(405)  # "Method Not Allowed"
 
 @app.route('/')
 def home():
@@ -115,14 +123,14 @@ def get_word_videos():
 def load_video():
     data = request.json
     video_title = data.get('video_title')
+    logging.debug(f"Loading video title: {video_title}")
     participant = video_title.split("_")[0]
     video_path = os.path.join(os.getenv("VIDEO_DIRECTORY"), participant, video_title)
-    print(video_path)
-
     try:
+        logging.debug(f"Loading video  in the try: {video_path}")
         return send_file(video_path, mimetype="video/mp4")
     except FileNotFoundError:
-        return "Video not found", 404
+        return "Video not found" + video_title, 404
 
 
 if __name__ == '__main__':

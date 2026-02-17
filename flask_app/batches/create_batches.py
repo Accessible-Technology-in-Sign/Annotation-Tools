@@ -16,19 +16,20 @@ def create_phrase_batches():
                 if word and clip:
                     if word not in word_dict:
                         word_dict[word] = []
-                    # Avoid duplicates
                     if clip not in word_dict[word]:
                         word_dict[word].append(clip)
+
+    # sort by length of word * (5000 - length clip array) (descending, longest first)
+    sorted_items = sorted(word_dict.items(), key=lambda x: len(x[0]) * (5000 - len(x[1])), reverse=True)
 
     batches = {}
     batch_index = 0
     batches[f"batch_{batch_index}"] = {}
-    # print(word_dict)
-    
-    for word in word_dict.keys():
-        print(word)
-        batches[f"batch_{batch_index}"][word] = word_dict[word]
-        if(len(batches[f"batch_{batch_index}"]) == 2):
+
+    for i, (word, clips) in enumerate(sorted_items):
+        batches[f"batch_{batch_index}"][word] = clips
+        # start new batch every 2 words
+        if (i + 1) % 2 == 0 and (i + 1) < len(sorted_items):
             batch_index += 1
             batches[f"batch_{batch_index}"] = {}
 
@@ -36,6 +37,5 @@ def create_phrase_batches():
     with open(file_path, "w") as f:
         json.dump(batches, f, indent=4)
     print("batches created successfully")
-
 
 create_phrase_batches()

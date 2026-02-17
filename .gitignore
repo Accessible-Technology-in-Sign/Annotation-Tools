@@ -34,3 +34,6 @@ flask_app/config.py
 __pycache__/
 annot_venv/
 flask_app/config.py
+
+#Exported Data
+*.csv

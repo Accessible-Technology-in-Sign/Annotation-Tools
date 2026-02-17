@@ -37,6 +37,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"svelte-splitpanes": "^8.0.8"
+		"svelte-splitpanes": "^0.8.0"
 	}
 }

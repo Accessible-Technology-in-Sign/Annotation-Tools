@@ -9,12 +9,15 @@ export async function POST({ request, fetch }) {
         api_url = PROD_API_URL
     else
         api_url = DEV_API_URL
+    
 
     const resp = await fetch(`${api_url}/batches/word/video`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
+
+    console.log(resp)
 
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));

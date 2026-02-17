@@ -15,7 +15,7 @@ export async function load({ params, fetch }) {
 
     const data = await res.json();
     videoList = data.videos;
-    console.log(videoList);
+    
   } catch (error) {
     console.error("Load error:", error);
   }

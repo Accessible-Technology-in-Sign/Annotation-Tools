@@ -10,4 +10,4 @@ COPY ./flask_app ./
 EXPOSE 80
 
 # Run Flask directly on port 80
-CMD ["flask", "--app", "app", "run", "--host=0.0.0.0", "--port=80"]
+CMD ["flask", "--app", "app", "run", "--host=0.0.0.0", "--port=80", "--debug"]

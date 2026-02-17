@@ -23,12 +23,13 @@
 
   async function selectVideo(videoName) {
     try {
+      console.log("Printing video name: "+videoName)
       const res = await fetch("/api/batches/word/video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ video_title: videoName })
       });
-
+      console.log("RES: "+ res)
       if (!res.ok) {
         const error = await res.json().catch(() => ({ error: "Unknown error" }));
         alert(error.error || "Video fetch failed");
