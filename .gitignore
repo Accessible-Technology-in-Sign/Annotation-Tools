@@ -37,3 +37,6 @@ flask_app/config.py
 
 #Exported Data
 *.csv
+
+#Log files
+*.log
