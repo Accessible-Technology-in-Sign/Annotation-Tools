@@ -42,6 +42,17 @@
 
   let refVisible = true;
 
+  let showToast = false;
+  let toastMessage = "";
+
+  function showNotification(msg) {
+    toastMessage = msg;
+    showToast = true;
+    setTimeout(() => {
+      showToast = false;
+    }, 3000);
+  }
+
   function revPlayPause() {
     reviewVideoPaused = !reviewVideoPaused;
   }
@@ -389,6 +400,16 @@
               alt="archive icon">
         </button>
 
+        <!-- Save Button -->
+        <button on:click={() => { addAnnot(label, comments, username); showNotification("Annotation Saved!"); }}
+            class="bg-blue-600 hover:bg-blue-800 text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-all transform active:scale-95 shadow-md flex items-center gap-2"
+            tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          </svg>
+          <span class="hidden md:inline">Save</span>
+        </button>
+
         <!-- Label -->
         <div class="flex w-100px ml-3 min-w-[3rem] md:min-w-[6rem] lg:min-w-[8rem] h-20">
           <div 
@@ -458,6 +479,15 @@
       </div>
     </div>
   </div>
+
+  {#if showToast}
+    <div class="fixed bottom-24 right-8 bg-black/80 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-bounce flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <p class="font-medium">{toastMessage}</p>
+    </div>
+  {/if}
 {:else}
   <p>No video data available for the word "{word}".</p>
 {/if}
