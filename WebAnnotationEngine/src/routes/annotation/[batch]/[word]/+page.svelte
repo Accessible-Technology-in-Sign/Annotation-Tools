@@ -138,13 +138,8 @@
 
 
   function setLabel(newLabel) {
-    const annotation = {
-      user: username,
-      word,
-      batch,
-      label: newLabel,
-    };
     label = newLabel;
+    addAnnot(newLabel, comments, username);
   }
 
   function prevVideo() {
