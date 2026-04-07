@@ -1,12 +1,23 @@
-<script>
-  // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
-  export let data;
-  import { Pane, Splitpanes } from 'svelte-splitpanes';
-  import {writable} from "svelte/store"
-
+  import { onMount } from 'svelte';
   export const userAnnot = writable({})
 
-  const { batch, word, selectedVideoData } = data;
+  const { batch, word, selectedVideoData, batchWords } = data;
+
+  let completedWords = 0;
+
+  async function updateProgress() {
+    try {
+      const resp = await fetch(`http://127.0.0.1:5000/get_progress/${username}/${batch}`);
+      const progressData = await resp.json();
+      completedWords = progressData.completed_count;
+    } catch (err) {
+      console.error("Failed to update progress:", err);
+    }
+  }
+
+  onMount(() => {
+    updateProgress();
+  });
 
   let username = localStorage.getItem("username");
 
@@ -30,6 +41,17 @@
   let currReviewVideo = 0;
 
   let refVisible = true;
+
+  let showToast = false;
+  let toastMessage = "";
+
+  function showNotification(msg) {
+    toastMessage = msg;
+    showToast = true;
+    setTimeout(() => {
+      showToast = false;
+    }, 3000);
+  }
 
   function revPlayPause() {
     reviewVideoPaused = !reviewVideoPaused;
@@ -83,12 +105,13 @@
             user: annot_user,
             comments: annot_comments,
             time: Date.now(),
-            video_path: selectedVideoData.reviews[currReviewVideo]
+            video_path: selectedVideoData.reviews[currReviewVideo],
+            batch: batch
           })
       });
       const data = await response.json();
       console.log(data.message);
-
+      updateProgress();
     }
 
 }
@@ -138,13 +161,8 @@
 
 
   function setLabel(newLabel) {
-    const annotation = {
-      user: username,
-      word,
-      batch,
-      label: newLabel,
-    };
     label = newLabel;
+    addAnnot(newLabel, comments, username);
   }
 
   function prevVideo() {
@@ -231,9 +249,16 @@
       <div class="shring-0 px-4 py-2 flex justify-between items-center">
         <h1 class="text-3xl">Annotating: {word}</h1>
         <h2 class="text-md text-center">Annotating batch: {batch}, word: {word}</h2>
-        <div>
+        <div class="flex items-center gap-4">
+          <div class="flex flex-col items-end">
+            <span class="text-xs font-semibold">Progress: {completedWords} / {batchWords.length}</span>
+            <progress class="progress progress-primary w-40" value={completedWords} max={batchWords.length}></progress>
+          </div>
           <button on:click={toggleRefVisibility} class="visibility-button">
             {refVisible ? 'Hide Reference Video' : 'Show Reference Video'}
+          </button>
+          <button on:click={() => goto('/')} class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded transition-colors">
+            Done
           </button>
         </div>
       </div>
@@ -375,6 +400,16 @@
               alt="archive icon">
         </button>
 
+        <!-- Save Button -->
+        <button on:click={() => { addAnnot(label, comments, username); showNotification("Annotation Saved!"); }}
+            class="bg-blue-600 hover:bg-blue-800 text-white rounded-md p-2 md:p-2 lg:p-2.5 xl:p-3 m-3 transition-all transform active:scale-95 shadow-md flex items-center gap-2"
+            tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          </svg>
+          <span class="hidden md:inline">Save</span>
+        </button>
+
         <!-- Label -->
         <div class="flex w-100px ml-3 min-w-[3rem] md:min-w-[6rem] lg:min-w-[8rem] h-20">
           <div 
@@ -444,6 +479,15 @@
       </div>
     </div>
   </div>
+
+  {#if showToast}
+    <div class="fixed bottom-24 right-8 bg-black/80 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-bounce flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <p class="font-medium">{toastMessage}</p>
+    </div>
+  {/if}
 {:else}
   <p>No video data available for the word "{word}".</p>
 {/if}

@@ -24,5 +24,6 @@ export async function load({ params, fetch }) {
     batch,
     word,
     selectedVideoData,
+    batchWords: Object.keys(selectedBatch)
   };
 }

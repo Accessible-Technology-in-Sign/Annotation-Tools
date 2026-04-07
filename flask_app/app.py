@@ -25,11 +25,15 @@ def home():
 
 @app.route('/add_annot', methods=['POST'])
 def add_annot():
-    if not User.query.filter_by(username=data["user"]).first():
-        return jsonify({"error": "User not found"}), 403
+    from models import User, Annot
     data = request.json
+    
+    if not db.session.execute(db.select(User).filter_by(username=data["user"])).scalar():
+        return jsonify({"error": "User not found"}), 403
+        
     cmd = insert(Annot).values(
         sign=data['sign'],
+        batch=data.get('batch', 'unknown'),
         user=data["user"],
         label=data["label"],
         comments=data.get('comments', ""),
@@ -37,6 +41,7 @@ def add_annot():
         video_path=os.path.basename(data["video_path"])
     ).on_duplicate_key_update(
         sign=data['sign'],
+        batch=data.get('batch', 'unknown'),
         label=data["label"],
         comments=data.get('comments', ""),
         time=datetime.fromtimestamp(data["time"] / 1000)
@@ -49,10 +54,23 @@ def add_annot():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Failed to add annotation"}), 500
+
+@app.route('/get_progress/<username>/<batch>', methods=['GET'])
+def get_progress(username, batch):
+    from models import Annot
+    
+    # Query for unique signs annotated by this user in this batch
+    query = db.select(Annot.sign).filter_by(user=username, batch=batch).distinct()
+    completed_signs = db.session.execute(query).scalars().all()
+    
+    return jsonify({
+        "completed_count": len(completed_signs),
+        "completed_signs": completed_signs
+    })
     
 @app.route('/check_user', methods=['POST'])
 def check_user():
-    from models import db, User
+    from models import User
     data = request.json
     username = data.get("username")
 
