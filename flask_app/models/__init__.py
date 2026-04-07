@@ -8,6 +8,7 @@ class Annot(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     video_path = db.Column(db.String(255), nullable=False)
+    batch = db.Column(db.String(255), nullable=False)
     sign = db.Column(db.String(255), nullable=False)
     user = db.Column(db.String(255), nullable=False)
     time = db.Column(db.TIMESTAMP, default=datetime)

@@ -1,12 +1,23 @@
-<script>
-  // Accessing the `data` prop containing word and selectedVideoData from `+page.js`
-  export let data;
-  import { Pane, Splitpanes } from 'svelte-splitpanes';
-  import {writable} from "svelte/store"
-
+  import { onMount } from 'svelte';
   export const userAnnot = writable({})
 
-  const { batch, word, selectedVideoData } = data;
+  const { batch, word, selectedVideoData, batchWords } = data;
+
+  let completedWords = 0;
+
+  async function updateProgress() {
+    try {
+      const resp = await fetch(`http://127.0.0.1:5000/get_progress/${username}/${batch}`);
+      const progressData = await resp.json();
+      completedWords = progressData.completed_count;
+    } catch (err) {
+      console.error("Failed to update progress:", err);
+    }
+  }
+
+  onMount(() => {
+    updateProgress();
+  });
 
   let username = localStorage.getItem("username");
 
@@ -83,12 +94,13 @@
             user: annot_user,
             comments: annot_comments,
             time: Date.now(),
-            video_path: selectedVideoData.reviews[currReviewVideo]
+            video_path: selectedVideoData.reviews[currReviewVideo],
+            batch: batch
           })
       });
       const data = await response.json();
       console.log(data.message);
-
+      updateProgress();
     }
 
 }
@@ -226,9 +238,16 @@
       <div class="shring-0 px-4 py-2 flex justify-between items-center">
         <h1 class="text-3xl">Annotating: {word}</h1>
         <h2 class="text-md text-center">Annotating batch: {batch}, word: {word}</h2>
-        <div>
+        <div class="flex items-center gap-4">
+          <div class="flex flex-col items-end">
+            <span class="text-xs font-semibold">Progress: {completedWords} / {batchWords.length}</span>
+            <progress class="progress progress-primary w-40" value={completedWords} max={batchWords.length}></progress>
+          </div>
           <button on:click={toggleRefVisibility} class="visibility-button">
             {refVisible ? 'Hide Reference Video' : 'Show Reference Video'}
+          </button>
+          <button on:click={() => goto('/')} class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-4 rounded transition-colors">
+            Done
           </button>
         </div>
       </div>
